@@ -11,6 +11,9 @@
 [[problem_statement]]
 == Problem statement
 
+This program calculates the square of a number written in the terminal. 
+[[analysis]]
+
 #Analysis: Describe the problem to be solved#
 
 Input example:
