@@ -1,4 +1,4 @@
-// Copyright <year> <You>
+// Copyright <2024> <Aaron Santana Valdelomar>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,10 +9,16 @@
  *
  * @return Status code to the operating system, 0 means success.
  */
-int main(void) {
-  // TODO(you): Analyze the problem and be sure you understand each piece of
-  // input and output. Solve the problem by creating an algorithm, and test it.
-  // Copy the algorithm within source code comments. Finally implement the
-  // algorithm's instructions in the C applying good programming practices.
+int main(void)
+{
+  double value = 0.0;
+  //printf("Enter a number: "); // Prompt the user for a number
+  while (scanf("%lf", &value) == 1)
+  {
+    // Read the number from the user
+    double square = value * value;      // Calculate the square of the number
+    printf("%lg:%lg \n", value, square); // Print the result
+  }
+
   return EXIT_SUCCESS;
 }
