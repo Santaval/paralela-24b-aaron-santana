@@ -9,15 +9,12 @@
  *
  * @return Status code to the operating system, 0 means success.
  */
-int main(void)
-{
+int main(void) {
   double value = 0.0;
-  //printf("Enter a number: "); // Prompt the user for a number
-  while (scanf("%lf", &value) == 1)
-  {
+  while (scanf("%lf", &value) == 1) {
     // Read the number from the user
     double square = value * value;      // Calculate the square of the number
-    printf("%lg:%lg \n", value, square); // Print the result
+    printf("%lg:%lg \n", value, square);  // Print the result
   }
 
   return EXIT_SUCCESS;
