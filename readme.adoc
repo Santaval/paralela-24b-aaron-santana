@@ -1,0 +1,48 @@
+= Paralela 24b
+
+== Glossary
+- Programación serial: En la programación seriel, las tareas se ejecutan secuencialmente, es decir, una tras otra.
+
+- Programación concurrente: Es todo aquello que no es serial, es decir, las tareas se ejecutan de manera simultánea o alternada. Sin embatgo, no todo lo concurrente es paralelo.
+
+- Programación paralela: Es un subconjunto de la programación concurrente. Las tareas se ejecutan "una al lado de la otra", es decir, de manera simultánea.
+
+- Concurrencia de tareas: Es la capacidad que tiene el programa para ejecutar varias tareas al mismo tiempo
+
+- Paralelismo de datos: Es una técnica que se usa en programación paralela para dividir/distribuir los datos y operarlos al mismo tiempo
+
+- Hilo de ejecución:
+
+- Indeterminismo:
+
+- Memoria privada y compartida:
+
+- Espera activa:
+
+- Condición de carrera:
+
+- Control de concurrencia:
+
+- Seguridad condicional:
+
+- Exclusión mutua:
+
+- Semáforo:
+
+- Barrera:
+
+- Variable de condición:
+
+- Candado de lectura y escritura:
+
+- Descomposición:
+
+- Mapeo:
+
+- Incremento de velocidad:
+
+- Comunicación punto a punto entre procesos:
+
+- Comunicación colectiva entre procesos:
+
+- Reducción:
