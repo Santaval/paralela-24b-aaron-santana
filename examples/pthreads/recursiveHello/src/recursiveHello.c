@@ -4,14 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// procedure greet do
 /**
- * @brief Function that represents secondary thread work
+ * @brief Function to greet "astronauts" :)  recursively.
  *
- * This function is called by the secondary thread to perform its work, just print a message in the console.
+ * This function takes a pointer to a number and greets the astronauts recursively.
+ * If the number is 0, it prints "Goodbye astronaut" followed by the number.
+ * Otherwise, it prints "Hello astronaut" followed by the number and creates a secondary thread to greet the next astronaut.
+ * The function waits for the secondary thread to finish using pthread_join.
  *
- * @param data A pointer to the data passed to the thread function.
- * @return A pointer to the data returned by the thread function.
+ * @param data A pointer to the number of the astronaut.
+ * @return NULL
  */
 void* greet(void* data);
 
@@ -27,10 +29,12 @@ int main(void) {
     // create_thread(greet);
     pthread_t thread;  // create another thread to run greet function
 
+    size_t initNumber = 2; // create a variable to store the initial number
+
     /* create a thread and check if it was created successfully, if not, keep an EXIT_FAILURE in
     the error variable.Thread creation function takes 4 parameters: the thread, the attributes, the
     function to run and the data to pass to the function. */
-    int error = pthread_create(&thread, NULL, greet, NULL);
+    int error = pthread_create(&thread, NULL, greet, (void*)&initNumber);
 
     /* check if the thread was created successfully and print a message in
     the console */
@@ -57,8 +61,22 @@ int main(void) {
 
 // procedure greet do
 void* greet(void* data) {
-    // print("Hello from secondary thread\n");
-    printf("Hello from secondary thread\n");
-    // end
+    size_t number = *(size_t*)data; // get the number of the astronaut
+    
+    // print a goodbye message if the number is 0
+    if (number == 0) printf("Goodbye astronaut %zu\n", number);
+    else {
+        // print a hello message if the number is not 0
+        printf("Hello astronaut #%zu\n", number);
+        pthread_t thread; // create another thread to run greet function
+        int error = pthread_create(&thread, NULL, greet, (void*)(number - 1));
+        // check if the thread was created successfully
+        if (error == EXIT_FAILURE) {
+            fprintf(stderr, "Error: Couldn't create secondary thread");
+            return NULL;
+        }
+        // wait for the thread to finish its wor
+        pthread_join(thread, NULL);
+    }
     return NULL;
 }
