@@ -23,6 +23,8 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
+    pthread_join(thread, NULL);
+
 
     return EXIT_SUCCESS;
     // end
