@@ -1,0 +1,67 @@
+= Project name
+:experimental:
+:nofooter:
+:source-highlighter: pygments
+:sectnums:
+:stem: latexmath
+:toc:
+:xrefstyle: short
+
+
+[[problem_statement]]
+== Problem statement
+Copie su ejemplos/pthreads/hello a ejercicios/pthreads/recursive_hello. Puede renombrar ejercicios/pthreads/recursive_hello/src/hello.c a recursive_hello.c o si lo prefiere, main.c.
+
+Modifique a greet() para recibir un número de tipo size_t. Si este número es 0, greet() imprime una despedida y el número recibido. Luego termina su ejecución.
+
+Si el número que greet() recibe es mayor que cero, imprime un saludo y el número recibido. Luego crea un hilo para que invoque a greet() pero con un número menor que el recibido por parámetro.
+
+Modifique el procedimiento main() para crear una variable local de tipo size_t inicializada en 2. Envíe este número como parámetro de la subrutina greet() que correrá en el hilo secundario.
+
+== Predicción de salida
+
+Creo que va a dar algún tipo de error de acceso a memoria con la variable del número ya que es un puntero, porque en el video explicaba que cuando se utilizan múltiples hilos, estos no pueden acceder a los recursos de otros hilos. Cómo se describe en el vídeo, "no pueden compartir el mismo aire". Pero el hecho de que se esté pasando un parámetro por valor, me hace pensar que no debería haber problemas ya que el pasar parámetros puede hacer de comunicador entre los hilos.
+
+
+
+Input example:
+
+[source]
+----
+include::tests/input001.txt[]
+----
+
+Output example:
+
+[source]
+----
+include::tests/output001.txt[]
+----
+
+[[design]]
+== Design of solution
+
+#See the link:design/readme.adoc[design/] folder for an overall design of the solution.#
+
+
+[[user_manual]]
+== User manual
+
+[[build]]
+=== Build
+
+#Describe how to compile your solution.#
+
+[[usage]]
+=== Usage
+
+#Describe how to run your solution, e.g: arguments. Provide examples.#
+
+
+[[credits]]
+== Credits
+
+#Provide your contact information.#
+
+#Give credit to authors of libraries, images, sounds, or any resource you used.#
+
