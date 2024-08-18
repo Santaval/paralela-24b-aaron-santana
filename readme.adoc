@@ -13,7 +13,7 @@
 
 - Hilo de ejecución: Es un proceso que se ejecuta de manera independiente a otros procesos.
 
-- Indeterminismo:
+- Indeterminismo: No se puede predecir el orden en el que serán ejecutadas las tareas/procedimientos/intrucciones en un programa concurrente
 
 - Memoria privada y compartida:
 
