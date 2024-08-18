@@ -1,8 +1,0 @@
-procedure main do
-    create_thread(greet);
-    print("Hello from main thread\n");
-end
-
-procedure greet do
-    print("Hello from secondary thread\n");
-end

@@ -1,0 +1,18 @@
+procedure main(argc, argv[]) do
+    integer thread_count := 0;
+    if argc > 1 do
+        thread_count := integer(argv[1]);
+    end
+    else do
+        thread_count := system_cores();
+    end
+
+    for i := 0 to thread_count do
+        create_thread(greet, i);
+    end
+    print("Hello from main thread\n");
+end
+
+procedure greet(threadNumber) do
+    print("Hello from thread %d\n", threadNumber);
+end
