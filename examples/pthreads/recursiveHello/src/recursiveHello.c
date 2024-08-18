@@ -29,7 +29,8 @@ int main(void) {
     // create_thread(greet);
     pthread_t thread;  // create another thread to run greet function
 
-    size_t* initial_num = malloc(sizeof(size_t));  // allocate memory for the initial number
+    // allocate memory for the initial number
+    size_t* initial_num = malloc(sizeof(size_t));
 
     *initial_num = 2;  // set the initial number
 
@@ -63,26 +64,28 @@ int main(void) {
 
 // procedure greet do
 void* greet(void* data) {
-    size_t number = *(size_t*)data; // get the number of the astronaut
+    size_t number = *(size_t*)data;  // get the number of the astronaut
 
-    free(data); // free the memory allocated for the number
-    
+    free(data);  // free the memory allocated for the number
+
     // print a goodbye message if the number is 0
-    if (number == 0) printf("Goodbye astronaut %zu\n", number);
-    else {
+    if (number == 0) {
+        printf("Goodbye astronaut %zu\n", number);
+    } else {
         // print a hello message if the number is not 0
         printf("Hello astronaut #%zu\n", number);
-        pthread_t thread; // create another thread to run greet function
+        pthread_t thread;  // create another thread to run greet function
 
-        size_t* next_number = malloc(sizeof(size_t)); // allocate memory for the next number
+        // allocate memory for the next number
+        size_t* next_number = malloc(sizeof(size_t));
 
-         // check if the memory was allocated successfully   
+        // check if the memory was allocated successfully
         if (next_number == NULL) {
             fprintf(stderr, "Error: Couldn't allocate memory for next number");
             return NULL;
         }
 
-        *next_number = number - 1; // set the next number
+        *next_number = number - 1;  // set the next number
 
         int error = pthread_create(&thread, NULL, greet, next_number);
         // check if the thread was created successfully
