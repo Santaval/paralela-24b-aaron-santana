@@ -11,7 +11,7 @@
 
 - Paralelismo de datos: Es una técnica que se usa en programación paralela para dividir/distribuir los datos y operarlos al mismo tiempo
 
-- Hilo de ejecución:
+- Hilo de ejecución: Es un proceso que se ejecuta de manera independiente a otros procesos.
 
 - Indeterminismo:
 
