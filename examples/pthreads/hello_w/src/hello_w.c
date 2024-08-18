@@ -7,29 +7,45 @@
 #include <string.h>
 
 long readThreadCountArgument(int argc, char** argv);
+void* greet(void* data);
 
 // procedure main(argc, argv[]) do
 int main(int argc, char** argv) {
-//     integer thread_count := 0;
-long threadCount = readThreadCountArgument(argc, argv);
-//     if argc > 1 do
-//         thread_count := integer(argv[1]);
-//     end
-//     else do
-//         thread_count := system_cores();
-//     end
+    //     integer thread_count := 0;
+    long threadCount = readThreadCountArgument(argc, argv); 
 
-//     for i := 0 to thread_count do
-//         create_thread(greet, i);
-//     end
-//     print("Hello from main thread\n");
-// end
+    //     for i := 0 to thread_count do
+    for (long threadIndex = 0; threadIndex < threadCount; ++threadIndex) {
+        // create_thread(greet, i);
+        pthread_t thread;
+
+        int error = pthread_create(&thread, NULL, greet, &threadIndex);
+
+        if (error == EXIT_FAILURE) {
+            fprintf(stderr, "Error: Couldn't create %ld thread \n", threadIndex);
+            return EXIT_FAILURE;
+        }
+
+        pthread_join(thread, NULL);
+
+    //     end
+
+    }
+    //     print("Hello from main thread\n");
+    printf("Hello from home astronaut! \n");
+    // end
 }
 
 
 // procedure greet(threadNumber) do
-//     print("Hello from thread %d\n", threadNumber);
-// end
+void* greet(void* data) {
+    long threadNumber = *(long*) data;
+    //     print("Hello from thread %d\n", threadNumber);
+    printf("Hello from earth %ld astronaut! \n", threadNumber);
+    // end
+
+    return NULL;
+}
 
 /**
  * Reads the thread count argument from the command line arguments. If the argument is not present, the function
