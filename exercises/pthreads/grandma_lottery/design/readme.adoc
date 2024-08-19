@@ -1,4 +1,4 @@
-= Design of solution
+= Grandma Lotery
 :experimental:
 :nofooter:
 :source-highlighter: pygments
