@@ -1,8 +1,12 @@
 procedure main do
-  create_thread(greet)
-  print "Hello from main thread"
+  declare grandchild1 := create_thread(buyLottery)
+  declare grandchild2 := create_thread(buyLottery)
+
+  const num1 := join_thread(grandchild1)
+  const num2 := join_thread(grandchild2)
+  print num1, num2
 end procedure
 
-procedure greet do
-  print "Hello from secondary thread"
+procedure buyLottery do
+  return random(0, 100) // random number between 0 and 99 inclusive
 end procedure
