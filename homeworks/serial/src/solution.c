@@ -20,8 +20,10 @@ int main(int argc, char** argv) {
 
 
 Arguments processArguments(int argc, char** argv) {
+  const AGUMENTS_COUNT = 3;  // 3 arguments are expected
   Arguments args;
-  if (argc != 3) {
+  // Check if the number of arguments is correct
+  if (argc != AGUMENTS_COUNT) {
     fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
