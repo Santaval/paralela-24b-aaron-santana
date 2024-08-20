@@ -3,16 +3,30 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "solution.h"
+
 
 /**
  * @brief Start program execution.
  *
  * @return Status code to the operating system, 0 means success.
  */
-int main(void) {
-  // TODO(you): Analyze the problem and be sure you understand each piece of
-  // input and output. Solve the problem by creating an algorithm, and test it.
-  // Copy the algorithm within source code comments. Finally implement the
-  // algorithm's instructions in the C applying good programming practices.
+int main(int argc, char** argv) {
+  Arguments args = processArguments(argc, argv);
+  printf("Job file: %s\n", args.jobFile);
+  printf("Threads count: %zu\n", args.threadsCount);
   return EXIT_SUCCESS;
 }
+
+
+Arguments processArguments(int argc, char** argv) {
+  Arguments args;
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+  args.jobFile = argv[1];
+  args.threadsCount = atoi(argv[2]);
+  return args;
+}
+
