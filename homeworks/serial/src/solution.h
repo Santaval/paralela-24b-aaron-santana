@@ -15,6 +15,22 @@ typedef struct {
     size_t threadsCount;
 } Arguments;
 
+/**
+ * @struct JobData
+ * @brief Represents the data for a job.
+ * 
+ * This struct contains the necessary data for a job, including the file path of the plate, 
+ * the duration of the simulation, the thermal diffusivity, the dimensions of the plate cells, 
+ * and the balance point.
+ */
+typedef struct {
+    char* plateFile;
+    double duration;
+    double thermalDiffusivity;
+    double plateCellDimmensions;
+    double balancePoint;
+} JobData;
+
 
 /**
  * @brief Process the command line arguments.
