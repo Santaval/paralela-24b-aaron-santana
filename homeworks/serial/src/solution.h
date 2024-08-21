@@ -42,3 +42,8 @@ typedef struct {
  * @return The processed arguments.
  */
 Arguments processArguments(int argc, char** argv);
+
+
+
+JobData* readJobData(const char* jobFile);
+size_t calcFileLinesCount(const char* filePath);
