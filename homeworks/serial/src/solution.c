@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "solution.h"
 
 
@@ -14,18 +15,13 @@
 int main(int argc, char** argv) {
   Arguments args = processArguments(argc, argv);
   JobData* jobData = readJobData(args.jobFile);
+  size_t jobsCount = calcFileLinesCount(args.jobFile);
+  SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
+  assert(results != NULL);
 
-  for (size_t i = 0; i < 3; i++) {
-    printf("-----------------\n");
-    printf("Job %zu\n", i);
-    printf("Plate file: %s\n", &jobData[i].plateFile);
-    printf("Duration: %lf\n", jobData[i].duration);
-    printf("Thermal diffusivity: %lf\n", jobData[i].thermalDiffusivity);
-    printf("Plate cell dimmensions: %lf\n", jobData[i].plateCellDimmensions);
-    printf("Balance point: %lf\n", jobData[i].balancePoint);
+  for (size_t i = 0; i < jobsCount; i++) {
+    results[i] = processJob(jobData[i]);
   }
-  printf("Job file: %s\n", args.jobFile);
-  printf("Threads count: %zu\n", args.threadsCount);
 
   free(jobData);
   return EXIT_SUCCESS;
@@ -57,7 +53,8 @@ JobData* readJobData(const char* jobFile) {
 
   assert(jobData != NULL);
   for (size_t i = 0; i < jobs; i++) {
-    fscanf(file, "%s", &jobData[i].plateFile);
+    jobData[i].plateFile = malloc(100 * sizeof(char));
+    fscanf(file, "%s", jobData[i].plateFile);
     fscanf(file, "%lf", &jobData[i].duration);
     fscanf(file, "%lf", &jobData[i].thermalDiffusivity);
     fscanf(file, "%lf", &jobData[i].plateCellDimmensions);
@@ -82,4 +79,38 @@ size_t calcFileLinesCount(const char* filePath) {
   }
   fclose(file);
   return linesCount;
+}
+
+SimulationResult processJob(JobData jobData) {
+  SimulationResult result;
+  result.plate = readMatrix(jobData.plateFile);
+
+  return result;
+}
+
+
+
+// Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
+double** readMatrix(const char* binaryFilepath) {
+   FILE *binaryFile;
+   size_t rows, cols;
+   double** matrix;
+  binaryFile = fopen(binaryFilepath, "rb");
+
+    if(!binaryFile){
+        printf("Error opening file %s\n",binaryFilepath);
+        exit(EXIT_FAILURE);
+    }
+
+    fread(&rows,sizeof(size_t),1,binaryFile);
+    fread(&cols,sizeof(size_t),1,binaryFile);
+
+    matrix = (double**)malloc(rows*sizeof(double*));
+    for(size_t i=0;i<rows;i++){
+        matrix[i] = (double*)malloc(cols*sizeof(double));
+        fread(matrix[i],sizeof(double),cols,binaryFile);
+    }
+
+    fclose(binaryFile);
+    return matrix;
 }

@@ -31,6 +31,16 @@ typedef struct {
     double balancePoint;
 } JobData;
 
+/**
+ * @brief Structure representing the result of a simulation.
+ * 
+ * This structure contains a 2D array representing a plate and the number of iterations performed in the simulation.
+ */
+typedef struct {
+    double** plate;
+    size_t iterations;
+} SimulationResult;
+
 
 /**
  * @brief Process the command line arguments.
@@ -59,3 +69,23 @@ JobData* readJobData(const char* jobFile);
  * @return The number of lines in the file.
  */
 size_t calcFileLinesCount(const char* filePath);
+
+
+/**
+ * @brief Processes a job using the provided job data.
+ *
+ * This function takes a `JobData` object as input and processes the job accordingly.
+ * It returns a `SimulationResult` object that represents the result of the job processing.
+ *
+ * @param jobData The job data to be processed.
+ * @return The result of the job processing.
+ */
+SimulationResult processJob(JobData jobData);
+
+/**
+ * Reads a matrix from a binary file.
+ *
+ * @param binaryFilpath The filepath of the binary file.
+ * @return A double pointer to the matrix read from the file.
+ */
+double** readMatrix(const char* binaryFilpath);
