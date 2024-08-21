@@ -83,9 +83,9 @@ size_t calcFileLinesCount(const char* filePath);
 SimulationResult processJob(JobData jobData);
 
 /**
- * Reads a matrix from a binary file.
+ * Reads a matrix from a binary file that represents a plate.
  *
  * @param binaryFilpath The filepath of the binary file.
  * @return A double pointer to the matrix read from the file.
  */
-double** readMatrix(const char* binaryFilpath);
+double** readPlate(const char* binaryFilpath);

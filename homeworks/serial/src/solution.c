@@ -83,7 +83,7 @@ size_t calcFileLinesCount(const char* filePath) {
 
 SimulationResult processJob(JobData jobData) {
   SimulationResult result;
-  result.plate = readMatrix(jobData.plateFile);
+  result.plate = readPlate(jobData.plateFile);
 
   return result;
 }
@@ -91,7 +91,7 @@ SimulationResult processJob(JobData jobData) {
 
 
 // Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
-double** readMatrix(const char* binaryFilepath) {
+double** readPlate(const char* binaryFilepath) {
    FILE *binaryFile;
    size_t rows, cols;
    double** matrix;
