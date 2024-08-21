@@ -5,11 +5,11 @@ procedure main(argc, argv) {
 
     // Open job file
     const jobFile := open(jobFile);
+    const jobs := readJobData(job);
     
     // Process each job
-    for line in jobFile do
+    for job in jobs do
         // get job info from line
-        const job := parseJob(line);
         // start job
         const result := processJob(job);
         // write report file and state plate binary file
