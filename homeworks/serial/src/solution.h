@@ -45,5 +45,17 @@ Arguments processArguments(int argc, char** argv);
 
 
 
+/**
+ * Reads job data from a specified job file.
+ *
+ * @param jobFile The path to the job file.
+ * @return A pointer to the JobData structure containing the read job data.
+ */
 JobData* readJobData(const char* jobFile);
+/**
+ * Calculates the number of lines in a file.
+ *
+ * @param filePath The path to the file.
+ * @return The number of lines in the file.
+ */
 size_t calcFileLinesCount(const char* filePath);
