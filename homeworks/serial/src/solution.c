@@ -84,7 +84,7 @@ size_t calcFileLinesCount(const char* filePath) {
 SimulationResult processJob(JobData jobData) {
   Plate plate = readPlate(jobData.plateFile);
   SimulationResult result = simulate(jobData, plate);
-  
+  printPlate(result.plate);
   return result;
 }
 
@@ -158,9 +158,24 @@ Plate simulationIteration(JobData jobData, Plate plate) {
       double right = plate.data[i][j + 1];
       double up = plate.data[i - 1][j];
       double down = plate.data[i + 1][j];
-      newPlate.data[i][j] = (left + right + up + down) / 4;
+      double cell = plate.data[i][j];
+      // cell + ((duration * thermalDiffusivity) / (plateDimmensions * plateDimmensions)) * (left + right + up + down - 4 * cell);
+      newPlate.data[i][j] = cell + ((jobData.duration * jobData.thermalDiffusivity) / (jobData.plateCellDimmensions * jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
     }
   }
   return newPlate;
+}
+
+void printPlate(Plate plate) {
+  for (size_t i = 0; i < plate.rows; i++) {
+    for (size_t j = 0; j < plate.cols; j++) {
+      printf("%lf ", plate.data[i][j]);
+    }
+    printf("\n");
+  }
+
+  printf("\n");
+  printf("Rows: %zu\n", plate.rows);
+  printf("Cols: %zu\n", plate.cols);
 }
 

@@ -111,3 +111,5 @@ SimulationResult simulate(JobData jobData, Plate plate);
 Plate copyPlate(Plate plate);
 
 Plate simulationIteration(JobData JobData, Plate plate);
+
+void printPlate(Plate plate);
