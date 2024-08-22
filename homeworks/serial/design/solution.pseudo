@@ -95,15 +95,15 @@ procedure calculateNewTemperature(plate, rowIndex, colIndex, duration, thermalDi
     return newTemperature;
 }
 
-procedure isPlateBalanced(plate, balancePoint) {
+procedure isPlateBalanced(actualPlate, previousPlate, balancePoint) {
     const rows :=  rows(plate);
     const cols :=  cols(plate);
     for rowIndex := 0 to rows + 1 do
         for colIndex := 0 to cols + 1 do
             // if any cell is greater than the balance point, the plate is not balanced
-            if (plate[rowIndex][colIndex] > balancePoint) {
+            if (actualPlate[rowIndex][colIndex] - previousPlate[rowIndex][colIndex]) > balancePoint do 
                 return false;
-            }
+            end
         end
     end
     return true;
