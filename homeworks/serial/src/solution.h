@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef double** Plate;
+
 /**
  * @struct Arguments
  * @brief Represents the arguments of the program such as the job file path and the number of threads.
@@ -37,7 +39,7 @@ typedef struct {
  * This structure contains a 2D array representing a plate and the number of iterations performed in the simulation.
  */
 typedef struct {
-    double** plate;
+    Plate plate;
     size_t iterations;
 } SimulationResult;
 
@@ -88,4 +90,4 @@ SimulationResult processJob(JobData jobData);
  * @param binaryFilpath The filepath of the binary file.
  * @return A double pointer to the matrix read from the file.
  */
-double** readPlate(const char* binaryFilpath);
+Plate readPlate(const char* binaryFilpath);
