@@ -82,9 +82,8 @@ size_t calcFileLinesCount(const char* filePath) {
 }
 
 SimulationResult processJob(JobData jobData) {
-  SimulationResult result;
   Plate plate = readPlate(jobData.plateFile);
-
+  SimulationResult result = simulate(jobData, plate);
   
   return result;
 }
@@ -129,7 +128,13 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   {
     previousPlate = copyPlate(currentPlate);
     currentPlate = simulationIteration(jobData, previousPlate);
+    iterationsCount++;
   } while (iterationsCount < 1000);
+
+  SimulationResult result;
+  result.plate = currentPlate;
+  result.iterations = iterationsCount;
+  return result;
   
 }
 
@@ -141,6 +146,20 @@ Plate copyPlate(Plate plate) {
   for (size_t i = 0; i < plate.rows; i++) {
     newPlate.data[i] = malloc(plate.cols * sizeof(double));
     memcpy(newPlate.data[i], plate.data[i], plate.cols * sizeof(double));
+  }
+  return newPlate;
+}
+
+Plate simulationIteration(JobData jobData, Plate plate) {
+  Plate newPlate = copyPlate(plate);
+  for (size_t i = 1; i < plate.rows - 1; i++) {
+    for (size_t j = 1; j < plate.cols - 1; j++) {
+      double left = plate.data[i][j - 1];
+      double right = plate.data[i][j + 1];
+      double up = plate.data[i - 1][j];
+      double down = plate.data[i + 1][j];
+      newPlate.data[i][j] = (left + right + up + down) / 4;
+    }
   }
   return newPlate;
 }
