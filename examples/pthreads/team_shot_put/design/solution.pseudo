@@ -16,12 +16,20 @@ procedure main(argc, argv[])  // referee
 end procedure
 
 procedure compete()
+  declare threads := thread_t[team_count][athlete_count]
   // For each team
   for team_number := 0 to team_count do
     // For each athlete
     for athlete_number := 0 to athlete_count do
       // Score the best shot this athlete reached
-      best_shots[team_number][athlete_number] := shot(team_number, athlete_number)
+      threads[team_number][athlete_number] := create_thread(shot)
+    end for
+  end for
+
+  // Wait for all threads to finish
+  for team_number := 0 to team_count do
+    for athlete_number := 0 to athlete_count do
+      join_thread(threads[team_number][athlete_number])
     end for
   end for
 end procedure
@@ -53,4 +61,12 @@ procedure print_result()
       print "draw for round", athlete_number
     end if
   end for
+  // Print the final result
+  if team_scores[0] > team_scores[1] then
+    print "team 0 wins"
+  else if team_scores[1] > team_scores[0] then
+    print "team 1 wins"
+  else
+    print "draw"
+  end if
 end procedure
