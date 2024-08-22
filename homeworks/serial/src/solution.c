@@ -93,6 +93,7 @@ SimulationResult processJob(JobData jobData) {
 
 // Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
 Plate readPlate(const char* binaryFilepath) {
+   Plate plate;
    FILE *binaryFile;
    size_t rows, cols;
    double** matrix;
@@ -113,6 +114,34 @@ Plate readPlate(const char* binaryFilepath) {
     }
 
     fclose(binaryFile);
-    return matrix;
+    plate.data = matrix;
+    plate.rows = rows;
+    plate.cols = cols;
+    return plate;
+}
+
+SimulationResult simulate(JobData jobData, Plate plate) {
+  Plate previousPlate = copyPlate(plate);
+  Plate currentPlate = copyPlate(plate);
+  size_t iterationsCount = 0;
+
+  do
+  {
+    previousPlate = copyPlate(currentPlate);
+    currentPlate = simulationIteration(jobData, previousPlate);
+  } while (iterationsCount < 1000);
+  
+}
+
+Plate copyPlate(Plate plate) {
+  Plate newPlate;
+  newPlate.rows = plate.rows;
+  newPlate.cols = plate.cols;
+  newPlate.data = malloc(plate.rows * sizeof(double*));
+  for (size_t i = 0; i < plate.rows; i++) {
+    newPlate.data[i] = malloc(plate.cols * sizeof(double));
+    memcpy(newPlate.data[i], plate.data[i], plate.cols * sizeof(double));
+  }
+  return newPlate;
 }
 

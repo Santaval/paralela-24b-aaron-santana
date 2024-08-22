@@ -3,8 +3,15 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+/**
+ * @brief Structure representing a plate with data, number of rows, and number of columns.
+ */
 
-typedef double** Plate;
+typedef struct  {
+    double** data;
+    size_t rows;
+    size_t cols;
+} Plate;
 
 /**
  * @struct Arguments
@@ -91,3 +98,16 @@ SimulationResult processJob(JobData jobData);
  * @return A double pointer to the matrix read from the file.
  */
 Plate readPlate(const char* binaryFilpath);
+
+/**
+ * Simulates the given job data on the specified plate.
+ *
+ * @param jobData The job data to be simulated.
+ * @param plate The plate on which the simulation will be performed.
+ * @return The result of the simulation.
+ */
+SimulationResult simulate(JobData jobData, Plate plate);
+
+Plate copyPlate(Plate plate);
+
+Plate simulationIteration(JobData JobData, Plate plate);
