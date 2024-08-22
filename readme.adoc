@@ -11,9 +11,9 @@
 
 5) Paralelismo de datos: Es una técnica que se usa en programación paralela para dividir/distribuir los datos y operarlos al mismo tiempo
 
-6) Hilo de ejecución: Es un proceso que se ejecuta de manera independiente a otros procesos.
+6) Hilo de ejecución: Es una tarea/rutina que se ejecuta de manera independiente a otras.
 
-7) Indeterminismo: No se puede predecir el orden en el que serán ejecutadas las tareas/procedimientos/intrucciones en un programa concurrente
+7) Indeterminismo: No se puede predecir el orden en el que serán ejecutadas las tareas/procesos/instrucciones en un programa concurrente
 
 8) Memoria privada y compartida:
 
