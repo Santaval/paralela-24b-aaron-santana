@@ -112,4 +112,6 @@ Plate copyPlate(Plate plate);
 
 Plate simulationIteration(JobData JobData, Plate plate);
 
+bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint);
+
 void printPlate(Plate plate);

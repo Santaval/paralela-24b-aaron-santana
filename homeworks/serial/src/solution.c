@@ -129,7 +129,7 @@ SimulationResult simulate(JobData jobData, Plate plate) {
     previousPlate = copyPlate(currentPlate);
     currentPlate = simulationIteration(jobData, previousPlate);
     iterationsCount++;
-  } while (iterationsCount < 1000);
+  } while (!isPlateBalanced(currentPlate, previousPlate, jobData.balancePoint));
 
   SimulationResult result;
   result.plate = currentPlate;
@@ -177,5 +177,16 @@ void printPlate(Plate plate) {
   printf("\n");
   printf("Rows: %zu\n", plate.rows);
   printf("Cols: %zu\n", plate.cols);
+}
+
+bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint) {
+  for (size_t i = 0; i < currentPlate.rows; i++) {
+    for (size_t j = 0; j < currentPlate.cols; j++) {
+      if (currentPlate.data[i][j] - previousPlate.data[i][j] > balancePoint) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
