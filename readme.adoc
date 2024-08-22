@@ -7,7 +7,7 @@
 
 3) Programación paralela: Es un subconjunto de la programación concurrente. Las tareas se ejecutan "una al lado de la otra", es decir, de manera simultánea.
 
-4) Concurrencia de tareas: Es la capacidad que tiene el programa para ejecutar varias tareas al mismo tiempo
+4) Concurrencia de tareas: Es la capacidad que tiene el programa para ejecutar varias tareas al mismo tiempo. Esto no solo implica que las tareas se ejecuten de manera simultánea, sino que pueden intercalarse entre sí.
 
 5) Paralelismo de datos: Es una técnica que se usa en programación paralela para dividir/distribuir los datos y operarlos al mismo tiempo
 
