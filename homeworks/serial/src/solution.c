@@ -48,7 +48,6 @@ JobData* readJobData(const char* jobFile) {
     exit(EXIT_FAILURE);
   }
   size_t jobs = calcFileLinesCount(jobFile);
-  printf("Jobs: %zu\n", jobs);
   JobData* jobData = malloc(jobs * sizeof(JobData));
 
   assert(jobData != NULL);
@@ -175,8 +174,6 @@ void printPlate(Plate plate) {
   }
 
   printf("\n");
-  printf("Rows: %zu\n", plate.rows);
-  printf("Cols: %zu\n", plate.cols);
 }
 
 bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint) {
