@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "types.h"
-#include <time.h>
 
 /**
  * @brief Processes a job using the provided job data.
@@ -16,14 +15,6 @@
  * @return The result of the job processing.
  */
 SimulationResult processJob(JobData jobData);
-
-/**
- * Writes a matrix to a binary file.
- *
- * @param plate The matrix to be written to the file.
- * @param binaryFilpath The filepath of the binary file.
- */
-void writePlate(Plate plate, const char* binaryFilpath);
 
 /**
  * Simulates the given job data on the specified plate.
@@ -39,7 +30,3 @@ Plate copyPlate(Plate plate);
 Plate simulationIteration(JobData JobData, Plate plate);
 
 bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint);
-
-void printPlate(Plate plate);
-
-void format_time(time_t seconds, char *buffer, size_t buffer_size);
