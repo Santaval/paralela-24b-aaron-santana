@@ -57,3 +57,32 @@ size_t calcFileLinesCount(const char* filePath) {
   fclose(file);
   return linesCount;
 }
+
+// Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
+Plate readPlate(const char* binaryFilepath) {
+   Plate plate;
+   FILE *binaryFile;
+   size_t rows, cols;
+   double** matrix;
+  binaryFile = fopen(binaryFilepath, "rb");
+
+    if(!binaryFile){
+        printf("Error opening file %s\n",binaryFilepath);
+        exit(EXIT_FAILURE);
+    }
+
+    fread(&rows,sizeof(size_t),1,binaryFile);
+    fread(&cols,sizeof(size_t),1,binaryFile);
+
+    matrix = (double**)malloc(rows*sizeof(double*));
+    for(size_t i=0;i<rows;i++){
+        matrix[i] = (double*)malloc(cols*sizeof(double));
+        fread(matrix[i],sizeof(double),cols,binaryFile);
+    }
+
+    fclose(binaryFile);
+    plate.data = matrix;
+    plate.rows = rows;
+    plate.cols = cols;
+    return plate;
+}
