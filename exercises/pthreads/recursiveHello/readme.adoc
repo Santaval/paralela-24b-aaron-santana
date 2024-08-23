@@ -23,6 +23,9 @@ Modifique el procedimiento main() para crear una variable local de tipo size_t i
 Creo que va a dar algún tipo de error de acceso a memoria con la variable del número ya que es un puntero, porque en el video explicaba que cuando se utilizan múltiples hilos, estos no pueden acceder a los recursos de otros hilos. Cómo se describe en el vídeo, "no pueden compartir el mismo aire". Pero el hecho de que se esté pasando un parámetro por valor, me hace pensar que no debería haber problemas ya que el pasar parámetros puede hacer de comunicador entre los hilos.
 
 
+=== Explicación de la salida
+Finalmente si ocurrió un segmentation fault, esto se debe a que el hilo hijo no puede acceder a la variable local de la función main, ya que esta variable es local y no puede ser compartida entre hilos. Para solucionar este problema creé una variable en memoria compartida y la pasé como argumento a la función greet().
+
 
 Input example:
 
