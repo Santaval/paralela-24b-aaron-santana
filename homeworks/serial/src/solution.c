@@ -27,15 +27,7 @@ int main(int argc, char** argv) {
   }
 
   for (size_t i = 0; i < jobsCount; i++) {
-    printPlate(results[i].plate);
-    printf("Iterations: %zu\n", results[i].iterations);
-    const time_t seconds = results[i].iterations * jobData[i].duration;
-    char formatted_time[48];
-    format_time(seconds, formatted_time, 48);
-    printf("Duration: %lf\n", jobData[i].duration);
-    printf("Time: %ld\n", seconds);
-    printf("Time: %s\n", formatted_time);
-    
+    writeJobData(jobData[i], results[i], "output.txt");
   }
 
   free(jobData);

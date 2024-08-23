@@ -10,6 +10,8 @@
  */
 void writePlate(Plate plate, const char* binaryFilpath);
 
+void writeJobData(JobData jobData, SimulationResult result, const char* filepath);
+
 /**
  * Prints the palte matrix to the console.
  *

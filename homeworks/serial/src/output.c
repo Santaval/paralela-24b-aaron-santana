@@ -1,6 +1,6 @@
-#pragma once
 #include "types.h"
 #include "output.h"
+#include <string.h>
 
 // code adapted from <https://es.stackoverflow.com/questions/358361/escribir-leer-estructuras-en-archivos-binarios>
 void writePlate(Plate plate, const char* binaryFilepath) {
@@ -32,4 +32,31 @@ void printPlate(Plate plate) {
   }
 
   printf("\n");
+}
+
+void writeJobData(JobData jobData, SimulationResult result, const char* filepath) {
+  FILE *file;
+  file = fopen(filepath, "w");
+
+  if(!file){
+      printf("Error opening file %s\n",filepath);
+      exit(EXIT_FAILURE);
+  }
+
+  fprintf(file, "%s ", jobData.plateFile);
+  fprintf(file, "%lf ", jobData.duration);
+  fprintf(file, "%lf ", jobData.thermalDiffusivity);
+  fprintf(file, "%lf ", jobData.plateCellDimmensions);
+  fprintf(file, "%lf ", jobData.balancePoint);
+  fprintf(file, "%zu ", result.iterations);
+  
+  
+  const time_t seconds = result.iterations * jobData.duration;
+    char formatted_time[48];
+    format_time(seconds, formatted_time, 48);
+  fprintf(file, "%s", formatted_time);
+  fprintf(file, "\n");
+
+  fclose(file);
+
 }
