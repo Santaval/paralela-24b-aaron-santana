@@ -101,6 +101,14 @@ SimulationResult processJob(JobData jobData);
 Plate readPlate(const char* binaryFilpath);
 
 /**
+ * Writes a matrix to a binary file.
+ *
+ * @param plate The matrix to be written to the file.
+ * @param binaryFilpath The filepath of the binary file.
+ */
+void writePlate(Plate plate, const char* binaryFilpath);
+
+/**
  * Simulates the given job data on the specified plate.
  *
  * @param jobData The job data to be simulated.
