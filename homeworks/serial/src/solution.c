@@ -6,7 +6,7 @@
 #include <string.h>
 #include "solution.h"
 #include <time.h>
-#include "input.c"
+#include "input.h"
 
 
 /**

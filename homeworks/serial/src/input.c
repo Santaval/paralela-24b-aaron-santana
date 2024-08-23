@@ -1,4 +1,3 @@
-#pragma once
 #include "input.h"
 #include <assert.h>
 #include <stdio.h>
