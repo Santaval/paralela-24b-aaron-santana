@@ -3,6 +3,7 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 /**
  * @brief Structure representing a plate with data, number of rows, and number of columns.
  */
@@ -115,3 +116,5 @@ Plate simulationIteration(JobData JobData, Plate plate);
 bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint);
 
 void printPlate(Plate plate);
+
+void format_time(time_t seconds, char *buffer, size_t buffer_size);

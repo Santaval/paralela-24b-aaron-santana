@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "solution.h"
+#include <time.h>
 
 
 /**
@@ -21,6 +22,18 @@ int main(int argc, char** argv) {
 
   for (size_t i = 0; i < jobsCount; i++) {
     results[i] = processJob(jobData[i]);
+  }
+
+  for (size_t i = 0; i < jobsCount; i++) {
+    printPlate(results[i].plate);
+    printf("Iterations: %zu\n", results[i].iterations);
+    const time_t seconds = results[i].iterations * jobData[i].duration;
+    char formatted_time[48];
+    format_time(seconds, formatted_time, 48);
+    printf("Duration: %lf\n", jobData[i].duration);
+    printf("Time: %ld\n", seconds);
+    printf("Time: %s\n", formatted_time);
+    
   }
 
   free(jobData);
@@ -83,7 +96,6 @@ size_t calcFileLinesCount(const char* filePath) {
 SimulationResult processJob(JobData jobData) {
   Plate plate = readPlate(jobData.plateFile);
   SimulationResult result = simulate(jobData, plate);
-  printPlate(result.plate);
   return result;
 }
 
@@ -187,3 +199,21 @@ bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoin
   return true;
 }
 
+void format_time(time_t seconds, char *buffer, size_t buffer_size) {
+    int years, months, days, hours, minutes, secs;
+
+    years = seconds / 31536000;
+    seconds -= years * 31536000;
+    months = seconds / 2592000;
+    seconds -= months * 2592000;
+    days = seconds / 86400;
+    seconds -= days * 86400;
+    hours = seconds / 3600;
+    seconds -= hours * 3600;
+    minutes = seconds / 60;
+    seconds -= minutes * 60;
+    secs = seconds;
+    
+    // Formatear la cadena en el buffer
+    snprintf(buffer, buffer_size, "%02d/%02d/%02d %02d:%02d:%02d", years, months, days, hours, minutes, secs);
+}
