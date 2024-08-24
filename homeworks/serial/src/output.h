@@ -20,7 +20,7 @@ void writePlate(Plate plate, const char* binaryFilpath);
  * @param filepath The path of the file to write the results to.
  */
 void writeJobsResult(JobData* jobsData, SimulationResult* results,
-    size_t jobsCount, const char* filepath);
+  size_t jobsCount, char* filepath);
 /**
  * Writes the result of a job to a file.
  *
@@ -62,3 +62,12 @@ void format_time(time_t seconds, char *buffer, size_t buffer_size);
  * @param filepath The filepath from which to remove the extension.
  */
 void removeExtension(char *filepath);
+
+
+/**
+ * Extracts numbers from a file and stores them in a character array.
+ *
+ * @param filename The name of the file to extract numbers from.
+ * @param numbers  The character array to store the extracted numbers.
+ */
+void extractNumbers(const char *filename, char *numbers);

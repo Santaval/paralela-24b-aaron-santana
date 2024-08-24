@@ -1,5 +1,6 @@
 // Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #include <string.h>
+#include <ctype.h>
 #include "types.h"
 #include "output.h"
 
@@ -37,9 +38,16 @@ void writePlate(Plate plate, const char* binaryFilepath) {
 
 
 void writeJobsResult(JobData* jobsData, SimulationResult* results,
-  size_t jobsCount, const char* filepath) {
+  size_t jobsCount, char* filepath) {
   FILE *file;
-  file = fopen(filepath, "w");
+
+  char* jobNumbers = malloc(100 * sizeof(char));
+  char* path = malloc(100 * sizeof(char));
+  extractNumbers(jobsData[0].plateFile, jobNumbers);
+  sprintf(path, "%s/job%s.tsv", jobsData[0].directory, jobNumbers);
+  
+  printf("Writing results to %s\n", path);
+  file = fopen(path, "w");
 
   if (!file) {
       printf("Error opening file %s\n", filepath);
@@ -58,6 +66,9 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
     writePlate(results[i].plate, binaryFilepath);
     free(binaryFilepath);
   }
+
+  free(jobNumbers);
+  free(path);
 
   fclose(file);
 }
@@ -83,4 +94,15 @@ void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
     if (last_dot != NULL) {
         *last_dot = '\0';
     }
+}
+
+
+void extractNumbers(const char *filename, char *numbers) {
+    while (*filename) {
+        if (isdigit((unsigned char)*filename)) {
+            *numbers++ = *filename;
+        }
+        filename++;
+    }
+    *numbers = '\0'; // Null-terminate the result string
 }
