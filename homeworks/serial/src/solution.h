@@ -31,3 +31,7 @@ Plate simulationIteration(JobData JobData, Plate plate);
 
 bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
     double balancePoint);
+
+void destroyJobsData(JobData *jobsData, size_t jobsCount);
+void destroyPlate(Plate plate);
+void destroySimulationResult(SimulationResult* results, size_t resultsCount);

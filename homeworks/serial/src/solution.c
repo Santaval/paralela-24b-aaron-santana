@@ -26,14 +26,20 @@ int main(int argc, char** argv) {
     results[i] = processJob(jobsData[i]);
   }
 
-    writeJobsResult(jobsData, results, jobsCount, "output.txt");
-  free(jobsData);
+  writeJobsResult(jobsData, results, jobsCount, "output.txt");
+
+  // free memory
+  destroyJobsData(jobsData, jobsCount);
+  destroySimulationResult(results, jobsCount);
   return EXIT_SUCCESS;
 }
 
 SimulationResult processJob(JobData jobData) {
   Plate plate = readPlate(jobData.plateFile);
   SimulationResult result = simulate(jobData, plate);
+  
+  // free memory
+  destroyPlate(plate);
   return result;
 }
 
@@ -43,11 +49,15 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   size_t iterationsCount = 0;
 
   do {
+    destroyPlate(previousPlate);
     previousPlate = copyPlate(currentPlate);
+    destroyPlate(currentPlate);
     currentPlate = simulationIteration(jobData, previousPlate);
     iterationsCount++;
   } while (!isPlateBalanced(currentPlate, previousPlate, jobData.balancePoint));
 
+  // free memory
+  destroyPlate(previousPlate);
   SimulationResult result;
   result.plate = currentPlate;
   result.iterations = iterationsCount;
@@ -113,4 +123,25 @@ void format_time(time_t seconds, char *buffer, size_t buffer_size) {
     // Formatear la cadena en el buffer
     snprintf(buffer, buffer_size, "%02d/%02d/%02d %02d:%02d:%02d", years,
       months, days, hours, minutes, secs);
+}
+
+void destroyJobsData(JobData *jobsData, size_t jobsCount) {
+    for (size_t i = 0; i < jobsCount; i++) {
+        free(jobsData[i].plateFile);
+    }
+    free(jobsData);
+}
+
+void destroyPlate(Plate plate) {
+  for (size_t i = 0; i < plate.rows; i++) {
+    free(plate.data[i]);
+  }
+  free(plate.data);
+}
+
+void destroySimulationResult(SimulationResult* results, size_t resultsCount) {
+    for (size_t i = 0; i < resultsCount; i++) {
+        destroyPlate(results[i].plate);
+    }
+    free(results);
 }
