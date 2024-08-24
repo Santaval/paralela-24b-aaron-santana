@@ -50,7 +50,11 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
     writeJobResult(jobsData[i], results[i], file);
     // TO-DO print plate in binary file
     char* binaryFilepath = malloc(100 * sizeof(char));
-    sprintf(binaryFilepath, "output/%s-%zu.bin", jobsData[i].plateFile, results[i].iterations);
+    removeExtension(jobsData[i].plateFile);
+    sprintf(binaryFilepath, "%s/%s-%zu.bin", jobsData[i].directory,
+      jobsData[i].plateFile, results[i].iterations);
+
+    printf("Writing plate to %s\n", binaryFilepath);
     writePlate(results[i].plate, binaryFilepath);
     free(binaryFilepath);
   }
@@ -71,4 +75,12 @@ void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
     format_time(seconds, formatted_time, 48);
   fprintf(file, "%s", formatted_time);
   fprintf(file, "\n");
+}
+
+ void removeExtension(char *filepath) {
+    char *last_dot = strrchr(filepath, '.');
+
+    if (last_dot != NULL) {
+        *last_dot = '\0';
+    }
 }

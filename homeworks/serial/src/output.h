@@ -53,3 +53,12 @@ void writePlate(Plate plate, const char* binaryFilepath);
  * @param buffer_size The size of the buffer.
  */
 void format_time(time_t seconds, char *buffer, size_t buffer_size);
+
+/**
+ * @brief Removes the file extension from the given filepath.
+ *
+ * This function modifies the input `filepath` string by removing the file extension.
+ *
+ * @param filepath The filepath from which to remove the extension.
+ */
+void removeExtension(char *filepath);
