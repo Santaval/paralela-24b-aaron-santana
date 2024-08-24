@@ -3,6 +3,18 @@
 #include "types.h"
 #include "output.h"
 
+void printPlate(Plate plate) {
+  for (size_t i = 0; i < plate.rows; i++) {
+    for (size_t j = 0; j < plate.cols; j++) {
+      printf("%lf ", plate.data[i][j]);
+    }
+    printf("\n");
+  }
+
+  printf("\n");
+}
+
+
 // code adapted from <https://es.stackoverflow.com/questions/358361/escribir-leer-estructuras-en-archivos-binarios>
 void writePlate(Plate plate, const char* binaryFilepath) {
   FILE *binaryFile;
@@ -24,18 +36,6 @@ void writePlate(Plate plate, const char* binaryFilepath) {
 }
 
 
-void printPlate(Plate plate) {
-  for (size_t i = 0; i < plate.rows; i++) {
-    for (size_t j = 0; j < plate.cols; j++) {
-      printf("%lf ", plate.data[i][j]);
-    }
-    printf("\n");
-  }
-
-  printf("\n");
-}
-
-
 void writeJobsResult(JobData* jobsData, SimulationResult* results,
   size_t jobsCount, const char* filepath) {
   FILE *file;
@@ -49,6 +49,10 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
   for (size_t i = 0; i < jobsCount; i++) {
     writeJobResult(jobsData[i], results[i], file);
     // TO-DO print plate in binary file
+    char* binaryFilepath = malloc(100 * sizeof(char));
+    sprintf(binaryFilepath, "output/%s-%zu.bin", jobsData[i].plateFile, results[i].iterations);
+    writePlate(results[i].plate, binaryFilepath);
+    free(binaryFilepath);
   }
 
   fclose(file);

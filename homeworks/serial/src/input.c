@@ -27,6 +27,10 @@ JobData *readJobData(const char *jobFile) {
     exit(EXIT_FAILURE);
   }
 
+  // get the directory from the job file
+  char directory[100];
+  getDirectory(jobFile, directory, 100);
+
   // Read the number of jobs based on the number of lines in the file
   size_t jobs = calcFileLinesCount(jobFile);
   JobData *jobData = malloc(jobs * sizeof(JobData));
@@ -36,11 +40,13 @@ JobData *readJobData(const char *jobFile) {
   // Read the job data from the file and store it in the array
   for (size_t i = 0; i < jobs; i++) {
     jobData[i].plateFile = malloc(100 * sizeof(char));
+    jobData[i].directory = malloc(100 * sizeof(char));
     fscanf(file, "%s", jobData[i].plateFile);
     fscanf(file, "%lf", &jobData[i].duration);
     fscanf(file, "%lf", &jobData[i].thermalDiffusivity);
     fscanf(file, "%lf", &jobData[i].plateCellDimmensions);
     fscanf(file, "%lf", &jobData[i].balancePoint);
+    strcpy(jobData[i].directory, directory);
   }
   fclose(file);
   return jobData;
@@ -65,15 +71,17 @@ size_t calcFileLinesCount(const char *filePath) {
 }
 
 // Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
-Plate readPlate(const char *binaryFilepath) {
+Plate readPlate(const char *binaryFilepath, char *directory) {
   Plate plate;
   FILE *binaryFile;
   size_t rows, cols;
   double **matrix;
-  binaryFile = fopen(binaryFilepath, "rb");
+  char path[100];
+  sprintf(path, "%s/%s", directory, binaryFilepath);
+  binaryFile = fopen(path, "rb");
 
   if (!binaryFile) {
-    printf("Error opening file %s\n", binaryFilepath);
+    printf("Error opening file %s\n", path);
     exit(EXIT_FAILURE);
   }
 
@@ -91,4 +99,17 @@ Plate readPlate(const char *binaryFilepath) {
   plate.rows = rows;
   plate.cols = cols;
   return plate;
+}
+
+void getDirectory(const char *path, char *directory, size_t size) {
+    strncpy(directory, path, size);
+    directory[size - 1] = '\0';
+
+    char *last_slash = strrchr(directory, '/');
+
+    if (last_slash != NULL) {
+        *last_slash = '\0';
+    } else {
+        directory[0] = '\0';
+    }
 }

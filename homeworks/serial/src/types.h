@@ -38,6 +38,7 @@ typedef struct {
     double thermalDiffusivity;
     double plateCellDimmensions;
     double balancePoint;
+    char* directory;
 } JobData;
 
 /**

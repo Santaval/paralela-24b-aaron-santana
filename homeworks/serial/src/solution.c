@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 }
 
 SimulationResult processJob(JobData jobData) {
-  Plate plate = readPlate(jobData.plateFile);
+  Plate plate = readPlate(jobData.plateFile, jobData.directory);
   SimulationResult result = simulate(jobData, plate);
   // free memory
   destroyPlate(plate);
@@ -127,6 +127,7 @@ void format_time(time_t seconds, char *buffer, size_t buffer_size) {
 void destroyJobsData(JobData *jobsData, size_t jobsCount) {
     for (size_t i = 0; i < jobsCount; i++) {
         free(jobsData[i].plateFile);
+        free(jobsData[i].directory);
     }
     free(jobsData);
 }

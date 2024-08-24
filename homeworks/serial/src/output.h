@@ -38,6 +38,14 @@ void writeJobResult(JobData jobData, SimulationResult result, FILE* file);
 void printPlate(Plate plate);
 
 /**
+ * Writes the contents of a Plate structure to a binary file.
+ *
+ * @param plate The Plate structure to be written.
+ * @param binaryFilepath The filepath of the binary file to write to.
+ */
+void writePlate(Plate plate, const char* binaryFilepath);
+
+/**
  * Formats the given time in seconds into a human-readable (YYYY/MM/DD HH:MM:SS) format and stores it in the provided buffer.
  *
  * @param seconds The time in seconds to be formatted.

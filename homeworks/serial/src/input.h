@@ -1,5 +1,6 @@
 // Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #pragma once
+#include <string.h>
 #include "types.h"
 
 /**
@@ -35,4 +36,17 @@ size_t calcFileLinesCount(const char* filePath);
  * @param binaryFilpath The filepath of the binary file.
  * @return A double pointer to the matrix read from the file.
  */
-Plate readPlate(const char* binaryFilpath);
+Plate readPlate(const char* binaryFilpath, char* directory);
+
+
+/**
+ * Retrieves the directory from a given file path.
+ *
+ * This function takes a file path as input and extracts the directory portion of the path.
+ * The extracted directory is stored in the provided `directory` buffer.
+ *
+ * @param path The file path from which to extract the directory.
+ * @param directory The buffer to store the extracted directory.
+ * @param size The size of the `directory` buffer.
+ */
+void getDirectory(const char *path, char *directory, size_t size);
