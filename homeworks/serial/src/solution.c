@@ -37,7 +37,6 @@ int main(int argc, char** argv) {
 SimulationResult processJob(JobData jobData) {
   Plate plate = readPlate(jobData.plateFile);
   SimulationResult result = simulate(jobData, plate);
-  
   // free memory
   destroyPlate(plate);
   return result;
