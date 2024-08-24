@@ -17,20 +17,17 @@
  */
 int main(int argc, char** argv) {
   Arguments args = processArguments(argc, argv);
-  JobData* jobData = readJobData(args.jobFile);
+  JobData* jobsData = readJobData(args.jobFile);
   size_t jobsCount = calcFileLinesCount(args.jobFile);
   SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
   assert(results != NULL);
 
   for (size_t i = 0; i < jobsCount; i++) {
-    results[i] = processJob(jobData[i]);
+    results[i] = processJob(jobsData[i]);
   }
 
-  for (size_t i = 0; i < jobsCount; i++) {
-    writeJobData(jobData[i], results[i], "output.txt");
-  }
-
-  free(jobData);
+    writeJobsResult(jobsData, results, jobsCount, "output.txt");
+  free(jobsData);
   return EXIT_SUCCESS;
 }
 

@@ -34,7 +34,8 @@ void printPlate(Plate plate) {
   printf("\n");
 }
 
-void writeJobData(JobData jobData, SimulationResult result, const char* filepath) {
+
+void writeJobsResult(JobData* jobsData, SimulationResult* results, size_t jobsCount, const char* filepath) {
   FILE *file;
   file = fopen(filepath, "w");
 
@@ -43,6 +44,18 @@ void writeJobData(JobData jobData, SimulationResult result, const char* filepath
       exit(EXIT_FAILURE);
   }
 
+  for (size_t i = 0; i < jobsCount; i++) {
+    writeJobResult(jobsData[i], results[i], file);
+    //TO-DO print plate in binary file
+  }
+
+  fclose(file);
+
+}
+
+
+void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
+
   fprintf(file, "%s ", jobData.plateFile);
   fprintf(file, "%lf ", jobData.duration);
   fprintf(file, "%lf ", jobData.thermalDiffusivity);
@@ -50,13 +63,10 @@ void writeJobData(JobData jobData, SimulationResult result, const char* filepath
   fprintf(file, "%lf ", jobData.balancePoint);
   fprintf(file, "%zu ", result.iterations);
   
-  
   const time_t seconds = result.iterations * jobData.duration;
     char formatted_time[48];
     format_time(seconds, formatted_time, 48);
   fprintf(file, "%s", formatted_time);
   fprintf(file, "\n");
-
-  fclose(file);
 
 }
