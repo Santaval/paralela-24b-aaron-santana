@@ -1,6 +1,7 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #pragma once
-#include "types.h"
 #include <time.h>
+#include "types.h"
 
 /**
  * Writes a matrix to a binary file.
@@ -18,7 +19,8 @@ void writePlate(Plate plate, const char* binaryFilpath);
  * @param jobsCount The number of jobs.
  * @param filepath The path of the file to write the results to.
  */
-void writeJobsResult(JobData* jobsData, SimulationResult* results, size_t jobsCount, const char* filepath);
+void writeJobsResult(JobData* jobsData, SimulationResult* results,
+    size_t jobsCount, const char* filepath);
 /**
  * Writes the result of a job to a file.
  *

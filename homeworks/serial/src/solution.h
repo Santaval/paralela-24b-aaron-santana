@@ -29,4 +29,5 @@ Plate copyPlate(Plate plate);
 
 Plate simulationIteration(JobData JobData, Plate plate);
 
-bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint);
+bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
+    double balancePoint);

@@ -1,3 +1,4 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>

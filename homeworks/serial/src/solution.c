@@ -1,12 +1,12 @@
-// Copyright <year> <You>
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "solution.h"
 #include <time.h>
 #include "input.h"
+#include "solution.h"
 #include "output.h"
 
 
@@ -42,8 +42,7 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   Plate currentPlate = copyPlate(plate);
   size_t iterationsCount = 0;
 
-  do
-  {
+  do {
     previousPlate = copyPlate(currentPlate);
     currentPlate = simulationIteration(jobData, previousPlate);
     iterationsCount++;
@@ -53,7 +52,6 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   result.plate = currentPlate;
   result.iterations = iterationsCount;
   return result;
-  
 }
 
 Plate copyPlate(Plate plate) {
@@ -77,14 +75,16 @@ Plate simulationIteration(JobData jobData, Plate plate) {
       double up = plate.data[i - 1][j];
       double down = plate.data[i + 1][j];
       double cell = plate.data[i][j];
-      // cell + ((duration * thermalDiffusivity) / (plateDimmensions * plateDimmensions)) * (left + right + up + down - 4 * cell);
-      newPlate.data[i][j] = cell + ((jobData.duration * jobData.thermalDiffusivity) / (jobData.plateCellDimmensions * jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
+      newPlate.data[i][j] = cell + ((jobData.duration * jobData
+      .thermalDiffusivity) / (jobData.plateCellDimmensions *
+        jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
     }
   }
   return newPlate;
 }
 
-bool isPlateBalanced(Plate currentPlate, Plate previousPlate, double balancePoint) {
+bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
+  double balancePoint) {
   for (size_t i = 0; i < currentPlate.rows; i++) {
     for (size_t j = 0; j < currentPlate.cols; j++) {
       if (currentPlate.data[i][j] - previousPlate.data[i][j] > balancePoint) {
@@ -109,7 +109,8 @@ void format_time(time_t seconds, char *buffer, size_t buffer_size) {
     minutes = seconds / 60;
     seconds -= minutes * 60;
     secs = seconds;
-    
+
     // Formatear la cadena en el buffer
-    snprintf(buffer, buffer_size, "%02d/%02d/%02d %02d:%02d:%02d", years, months, days, hours, minutes, secs);
+    snprintf(buffer, buffer_size, "%02d/%02d/%02d %02d:%02d:%02d", years,
+      months, days, hours, minutes, secs);
 }

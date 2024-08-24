@@ -1,11 +1,11 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #include "input.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "types.h"
 
-
-Arguments processArguments(int argc, char** argv) {
+Arguments processArguments(int argc, char **argv) {
   const int AGUMENTS_COUNT = 3;  // 3 arguments are expected
   Arguments args;
   // Check if the number of arguments is correct
@@ -18,14 +18,14 @@ Arguments processArguments(int argc, char** argv) {
   return args;
 }
 
-JobData* readJobData(const char* jobFile) {
-  FILE* file = fopen(jobFile, "r");
+JobData *readJobData(const char *jobFile) {
+  FILE *file = fopen(jobFile, "r");
   if (file == NULL) {
     fprintf(stderr, "Error opening file: %s\n", jobFile);
     exit(EXIT_FAILURE);
   }
   size_t jobs = calcFileLinesCount(jobFile);
-  JobData* jobData = malloc(jobs * sizeof(JobData));
+  JobData *jobData = malloc(jobs * sizeof(JobData));
 
   assert(jobData != NULL);
   for (size_t i = 0; i < jobs; i++) {
@@ -40,8 +40,8 @@ JobData* readJobData(const char* jobFile) {
   return jobData;
 }
 
-size_t calcFileLinesCount(const char* filePath) {
-  FILE* file = fopen(filePath, "r");
+size_t calcFileLinesCount(const char *filePath) {
+  FILE *file = fopen(filePath, "r");
   if (file == NULL) {
     fprintf(stderr, "Error opening file: %s\n", filePath);
     exit(EXIT_FAILURE);
@@ -58,30 +58,30 @@ size_t calcFileLinesCount(const char* filePath) {
 }
 
 // Code adapted from <https://es.stackoverflow.com/questions/409312/como-leer-un-binario-en-c>
-Plate readPlate(const char* binaryFilepath) {
-   Plate plate;
-   FILE *binaryFile;
-   size_t rows, cols;
-   double** matrix;
+Plate readPlate(const char *binaryFilepath) {
+  Plate plate;
+  FILE *binaryFile;
+  size_t rows, cols;
+  double **matrix;
   binaryFile = fopen(binaryFilepath, "rb");
 
-    if(!binaryFile){
-        printf("Error opening file %s\n",binaryFilepath);
-        exit(EXIT_FAILURE);
-    }
+  if (!binaryFile) {
+    printf("Error opening file %s\n", binaryFilepath);
+    exit(EXIT_FAILURE);
+  }
 
-    fread(&rows,sizeof(size_t),1,binaryFile);
-    fread(&cols,sizeof(size_t),1,binaryFile);
+  fread(&rows, sizeof(size_t), 1, binaryFile);
+  fread(&cols, sizeof(size_t), 1, binaryFile);
 
-    matrix = (double**)malloc(rows*sizeof(double*));
-    for(size_t i=0;i<rows;i++){
-        matrix[i] = (double*)malloc(cols*sizeof(double));
-        fread(matrix[i],sizeof(double),cols,binaryFile);
-    }
+  matrix = (double **)malloc(rows * sizeof(double *));
+  for (size_t i = 0; i < rows; i++) {
+    matrix[i] = (double *)malloc(cols * sizeof(double));
+    fread(matrix[i], sizeof(double), cols, binaryFile);
+  }
 
-    fclose(binaryFile);
-    plate.data = matrix;
-    plate.rows = rows;
-    plate.cols = cols;
-    return plate;
+  fclose(binaryFile);
+  plate.data = matrix;
+  plate.rows = rows;
+  plate.cols = cols;
+  return plate;
 }

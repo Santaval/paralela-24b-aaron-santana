@@ -1,22 +1,23 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
+#include <string.h>
 #include "types.h"
 #include "output.h"
-#include <string.h>
 
 // code adapted from <https://es.stackoverflow.com/questions/358361/escribir-leer-estructuras-en-archivos-binarios>
 void writePlate(Plate plate, const char* binaryFilepath) {
   FILE *binaryFile;
   binaryFile = fopen(binaryFilepath, "wb");
 
-  if(!binaryFile){
-      printf("Error opening file %s\n",binaryFilepath);
+  if (!binaryFile) {
+      printf("Error opening file %s\n", binaryFilepath);
       exit(EXIT_FAILURE);
   }
 
-  fwrite(&plate.rows,sizeof(size_t),1,binaryFile);
-  fwrite(&plate.cols,sizeof(size_t),1,binaryFile);
+  fwrite(&plate.rows, sizeof(size_t), 1, binaryFile);
+  fwrite(&plate.cols, sizeof(size_t), 1, binaryFile);
 
-  for(size_t i=0;i<plate.rows;i++){
-      fwrite(plate.data[i],sizeof(double),plate.cols,binaryFile);
+  for (size_t i=0; i< plate.rows; i++) {
+      fwrite(plate.data[i], sizeof(double), plate.cols, binaryFile);
   }
 
   fclose(binaryFile);
@@ -35,38 +36,35 @@ void printPlate(Plate plate) {
 }
 
 
-void writeJobsResult(JobData* jobsData, SimulationResult* results, size_t jobsCount, const char* filepath) {
+void writeJobsResult(JobData* jobsData, SimulationResult* results,
+  size_t jobsCount, const char* filepath) {
   FILE *file;
   file = fopen(filepath, "w");
 
-  if(!file){
-      printf("Error opening file %s\n",filepath);
+  if (!file) {
+      printf("Error opening file %s\n", filepath);
       exit(EXIT_FAILURE);
   }
 
   for (size_t i = 0; i < jobsCount; i++) {
     writeJobResult(jobsData[i], results[i], file);
-    //TO-DO print plate in binary file
+    // TO-DO print plate in binary file
   }
 
   fclose(file);
-
 }
 
 
 void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
-
   fprintf(file, "%s ", jobData.plateFile);
   fprintf(file, "%lf ", jobData.duration);
   fprintf(file, "%lf ", jobData.thermalDiffusivity);
   fprintf(file, "%lf ", jobData.plateCellDimmensions);
   fprintf(file, "%lf ", jobData.balancePoint);
   fprintf(file, "%zu ", result.iterations);
-  
   const time_t seconds = result.iterations * jobData.duration;
     char formatted_time[48];
     format_time(seconds, formatted_time, 48);
   fprintf(file, "%s", formatted_time);
   fprintf(file, "\n");
-
 }
