@@ -13,21 +13,27 @@ Arguments processArguments(int argc, char **argv) {
     fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
+
+  // assign the arguments to the struct
   args.jobFile = argv[1];
   args.threadsCount = atoi(argv[2]);
   return args;
 }
 
 JobData *readJobData(const char *jobFile) {
-  FILE *file = fopen(jobFile, "r");
+  FILE *file = fopen(jobFile, "r"); 
   if (file == NULL) {
     fprintf(stderr, "Error opening file: %s\n", jobFile);
     exit(EXIT_FAILURE);
   }
+
+  // Read the number of jobs based on the number of lines in the file
   size_t jobs = calcFileLinesCount(jobFile);
   JobData *jobData = malloc(jobs * sizeof(JobData));
 
-  assert(jobData != NULL);
+  assert(jobData != NULL); // Check if memory allocation was successful
+
+  // Read the job data from the file and store it in the array
   for (size_t i = 0; i < jobs; i++) {
     jobData[i].plateFile = malloc(100 * sizeof(char));
     fscanf(file, "%s", jobData[i].plateFile);
@@ -48,6 +54,7 @@ size_t calcFileLinesCount(const char *filePath) {
   }
   size_t linesCount = 0;
   char c;
+  // Count the number of lines in the file
   while ((c = fgetc(file)) != EOF) {
     if (c == '\n') {
       linesCount++;
