@@ -6,7 +6,7 @@
 
 
 Arguments processArguments(int argc, char** argv) {
-  const unsigned AGUMENTS_COUNT = 3;  // 3 arguments are expected
+  const int AGUMENTS_COUNT = 3;  // 3 arguments are expected
   Arguments args;
   // Check if the number of arguments is correct
   if (argc != AGUMENTS_COUNT) {
