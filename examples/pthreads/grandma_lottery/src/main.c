@@ -1,4 +1,5 @@
 // Copyright 2024 <You>
+#define _POSIX_C_SOURCE 199506L
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
