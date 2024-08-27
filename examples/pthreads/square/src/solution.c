@@ -14,7 +14,7 @@ int main(void) {
   while (scanf("%lf", &value) == 1) {
     // Read the number from the user
     double square = value * value;      // Calculate the square of the number
-    printf("%lg:%lg \n", value, square);  // Print the result
+    printf("%lg:%lg\n", value, square);  // Print the result
   }
 
   return EXIT_SUCCESS;

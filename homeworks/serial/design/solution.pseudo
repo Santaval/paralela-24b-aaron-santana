@@ -1,0 +1,110 @@
+procedure main(argc, argv) {
+    // Process arguments. Must have 3 arguments
+    const jobFile := argv[1];
+    const threadsCount := argv[2];
+
+    // Open job file
+    const jobFile := open(jobFile);
+    const jobs := readJobData(job);
+    
+    // Process each job
+    for job in jobs do
+        // get job info from line
+        // start job
+        const result := processJob(job);
+        // write report file and state plate binary file
+        writeResult(result);
+    end
+}
+
+procedure parseJob(line) {
+    // line format: plateFile, duration, thermalDiffusivity, plateCellDimmensions, balancePoint
+    const parts := split(line, ',');
+    return {
+        plateFile: parts[0],
+        duration: parts[1],
+        thermalDiffusivity: parts[2],
+        plateCellDimmensions: parts[3],
+        balancePoint: parts[4]
+    };
+}
+
+procedure processJob(job) {
+    const plate := readPlate(job.plateFile); // read matrix from binary file
+    // simulate heat diffusion, functions returns the number of iterations and the final plate
+    const result := simulate(plate, job.duration, job.thermalDiffusivity, job.plateCellDimmensions, job.balancePoint);
+    return result;
+}
+
+procedure readPlate(plateFile) {
+    const file := open(plateFile);
+    const rows := readInt(file);
+    const cols := readInt(file);
+    const plate := newMatrix(rows, cols);
+    for i := 0 to rows do
+        for j := 0 to cols do
+            plate[i][j] := readDouble(file);
+        end
+    end
+    return plate;
+}
+
+
+procedure simulate(plate, duration, thermalDiffusivity, plateCellDimmensions, balancePoint) {
+    declare previusPlate := copy(plate);
+    declare actualPlate := copy(plate);
+    declare iterarionCount := 0;
+
+    // simulations itereation should run at least once, is necessary to check duration don't be 0.
+    do
+        previusPlate = actualPlate; // save the acutal plate to compare with the next one
+        // run the iteration
+        actualPlate = iterarion(plate, duration, thermalDiffusivity, plateCellDimmensions);
+        iterarionCount++;
+    end while (!isPlateBalanced(plate));
+
+    // return the number of iterations and the final plate
+    return {
+        iterarionCount: iterarionCount,
+        plate: actualPlate
+    };
+}
+
+procedure iterarion(plate, duration, thermalDiffusivity, plateDimmensions) {
+    const rows :=  rows(plate);
+    const cols :=  cols(plate);
+    const newPlate := copy(plate);
+
+    // row + 1 and col + 1 to ignore the borders    
+    for rowIndex := 0 to rows + 1 do
+        for colIndex := 0 to cols + 1 do
+           newPlate[rowIndex][colIndex] := calculateNewTemperature(plate, rowIndex, colIndex, duration, thermalDiffusivity, plateDimmensions);
+        end
+    end 
+}
+
+procedure calculateNewTemperature(plate, rowIndex, colIndex, duration, thermalDiffusivity, plateDimmensions) {
+    const cell := plate[rowIndex][colIndex]; // get the current cell temperature
+    const left := plate[rowIndex][colIndex - 1]; // get the left cell temperature
+    const right := plate[rowIndex][colIndex + 1]; // get the right cell temperature
+    const up := plate[rowIndex - 1][colIndex]; // get the up cell temperature
+    const down := plate[rowIndex + 1][colIndex]; // get the down cell temperature
+
+    // apply formula
+    const newTemperature := cell + ((duration * thermalDiffusivity) / (plateDimmensions * plateDimmensions)) * (left + right + up + down - 4 * cell);
+    return newTemperature;
+}
+
+procedure isPlateBalanced(actualPlate, previousPlate, balancePoint) {
+    const rows :=  rows(plate);
+    const cols :=  cols(plate);
+    for rowIndex := 0 to rows + 1 do
+        for colIndex := 0 to cols + 1 do
+            // if any cell is greater than the balance point, the plate is not balanced
+            if (actualPlate[rowIndex][colIndex] - previousPlate[rowIndex][colIndex]) > balancePoint do 
+                return false;
+            end
+        end
+    end
+    return true;
+}

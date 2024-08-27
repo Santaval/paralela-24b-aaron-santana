@@ -1,0 +1,147 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "input.h"
+#include "solution.h"
+#include "output.h"
+
+
+/**
+ * @brief Start program execution.
+ *
+ * @return Status code to the operating system, 0 means success.
+ */
+int main(int argc, char** argv) {
+  Arguments args = processArguments(argc, argv);
+  JobData* jobsData = readJobData(args.jobFile);
+  size_t jobsCount = calcFileLinesCount(args.jobFile);
+  SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
+  assert(results != NULL);
+
+  for (size_t i = 0; i < jobsCount; i++) {
+    results[i] = processJob(jobsData[i]);
+  }
+
+  writeJobsResult(jobsData, results, jobsCount, "output.txt");
+
+  // free memory
+  destroyJobsData(jobsData, jobsCount);
+  destroySimulationResult(results, jobsCount);
+  return EXIT_SUCCESS;
+}
+
+SimulationResult processJob(JobData jobData) {
+  Plate plate = readPlate(jobData.plateFile, jobData.directory);
+  SimulationResult result = simulate(jobData, plate);
+  // free memory
+  destroyPlate(plate);
+  return result;
+}
+
+SimulationResult simulate(JobData jobData, Plate plate) {
+  Plate previousPlate = copyPlate(plate);
+  Plate currentPlate = copyPlate(plate);
+  size_t iterationsCount = 0;
+
+  do {
+    destroyPlate(previousPlate);
+    previousPlate = copyPlate(currentPlate);
+    destroyPlate(currentPlate);
+    currentPlate = simulationIteration(jobData, previousPlate);
+    iterationsCount++;
+  } while (!isPlateBalanced(currentPlate, previousPlate, jobData.balancePoint));
+
+  // free memory
+  destroyPlate(previousPlate);
+  SimulationResult result;
+  result.plate = currentPlate;
+  result.iterations = iterationsCount;
+  return result;
+}
+
+Plate copyPlate(Plate plate) {
+  Plate newPlate;
+  newPlate.rows = plate.rows;
+  newPlate.cols = plate.cols;
+  newPlate.data = malloc(plate.rows * sizeof(double*));
+  for (size_t i = 0; i < plate.rows; i++) {
+    newPlate.data[i] = malloc(plate.cols * sizeof(double));
+    memcpy(newPlate.data[i], plate.data[i], plate.cols * sizeof(double));
+  }
+  return newPlate;
+}
+
+Plate simulationIteration(JobData jobData, Plate plate) {
+  Plate newPlate = copyPlate(plate);
+  for (size_t i = 1; i < plate.rows - 1; i++) {
+    for (size_t j = 1; j < plate.cols - 1; j++) {
+      double left = plate.data[i][j - 1];
+      double right = plate.data[i][j + 1];
+      double up = plate.data[i - 1][j];
+      double down = plate.data[i + 1][j];
+      double cell = plate.data[i][j];
+      newPlate.data[i][j] = cell + ((jobData.duration * jobData
+      .thermalDiffusivity) / (jobData.plateCellDimmensions *
+        jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
+    }
+  }
+  return newPlate;
+}
+
+bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
+  double balancePoint) {
+  for (size_t i = 0; i < currentPlate.rows; i++) {
+    for (size_t j = 0; j < currentPlate.cols; j++) {
+      if (currentPlate.data[i][j] - previousPlate.data[i][j] > balancePoint) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+void format_time(time_t seconds, char *buffer, size_t buffer_size) {
+    int years, months, days, hours, minutes, secs;
+
+    years = seconds / 31536000;
+    seconds -= years * 31536000;
+    months = seconds / 2592000;
+    seconds -= months * 2592000;
+    days = seconds / 86400;
+    seconds -= days * 86400;
+    hours = seconds / 3600;
+    seconds -= hours * 3600;
+    minutes = seconds / 60;
+    seconds -= minutes * 60;
+    secs = seconds;
+
+    // Formatear la cadena en el buffer
+    snprintf(buffer, buffer_size, "%02d/%02d/%02d %02d:%02d:%02d", years,
+      months, days, hours, minutes, secs);
+}
+
+void destroyJobsData(JobData *jobsData, size_t jobsCount) {
+    for (size_t i = 0; i < jobsCount; i++) {
+        free(jobsData[i].plateFile);
+        free(jobsData[i].directory);
+    }
+    free(jobsData);
+}
+
+void destroyPlate(Plate plate) {
+  for (size_t i = 0; i < plate.rows; i++) {
+    free(plate.data[i]);
+  }
+  free(plate.data);
+}
+
+void destroySimulationResult(SimulationResult* results, size_t resultsCount) {
+    for (size_t i = 0; i < resultsCount; i++) {
+        destroyPlate(results[i].plate);
+    }
+    free(results);
+}
