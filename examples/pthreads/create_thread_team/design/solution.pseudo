@@ -1,11 +1,10 @@
 procedure main(argc, argv[])
   declare thread_count := integer(argv[1])
-  for thread_number := 0 to thread_count do
-    create_thread(greet, thread_number, thread_count) // thread team
-  end for
+  declare team := create_threads(thread_count, greet) do
   print "Hello from main thread"
+  join_threads(team) 
 end procedure
 
-procedure greet(thread_number, thread_count)
+procedure greet(thread_number, thread_count) do
   print "Hello from secondary thread", thread_number, " of ", thread_count
 end procedure
