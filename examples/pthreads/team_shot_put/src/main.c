@@ -11,9 +11,17 @@
 // const size_t shot_count = 3;
 #define shot_count 3
 
+struct private_data {
+  size_t athlete_number;
+  size_t team_number;
+  size_t athlete_count;
+  double** best_shots;
+};
+
 void compete(const size_t athlete_count, double** best_shots);
 double** create_double_matrix(const size_t rows, const size_t cols);
 void destroy_double_matrix(double** matrix, size_t rows);
+void* athlete(void* data);
 double shot(const size_t team_number, const size_t athlete_number);
 double random_f(const double min, const double max);
 void print_result(const size_t athlete_count, double** best_shots);
@@ -44,16 +52,45 @@ int main(int argc, char* argv[]) {
 }
 
 void compete(const size_t athlete_count, double** best_shots) {
+  pthread_t* threads[team_count] = { NULL };
+  struct private_data* private_array[team_count] = { NULL };
   // For each team
   for (size_t team_number = 0; team_number < team_count; ++team_number) {
+    threads[team_number] = calloc(athlete_count, sizeof(pthread_t));
+    assert(threads[team_number]);
+    private_array[team_number] = calloc(athlete_count,
+        sizeof(struct private_data));
+    assert(private_array[team_number]);
     // For each athlete
     for (size_t athlete_number = 0; athlete_number < athlete_count;
         ++athlete_number) {
-      // Score the best shot this athlete reached
-      best_shots[team_number][athlete_number] =
-          shot(team_number, athlete_number);
+      private_array[team_number][athlete_number].athlete_number =
+          athlete_number;
+      private_array[team_number][athlete_number].team_number = team_number;
+      private_array[team_number][athlete_number].athlete_count = athlete_count;
+      private_array[team_number][athlete_number].best_shots = best_shots;
+      pthread_create(&threads[team_number][athlete_number], NULL, athlete,
+          &private_array[team_number][athlete_number]);
     }
   }
+
+  for (size_t team_number = 0; team_number < team_count; ++team_number) {
+    for (size_t athlete_number = 0; athlete_number < athlete_count;
+        ++athlete_number) {
+      pthread_join(threads[team_number][athlete_number], NULL);
+    }
+    free(private_array[team_number]);
+    free(threads[team_number]);
+  }
+}
+
+void* athlete(void* data) {
+  struct private_data* my_data = (struct private_data*)data;
+  // Score the best shot this athlete reached
+  const size_t team_number = my_data->team_number;
+  my_data->best_shots[team_number][my_data->athlete_number] =
+      shot(team_number, my_data->athlete_number);
+  return NULL;
 }
 
 double shot(const size_t team_number, const size_t athlete_number) {
