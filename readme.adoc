@@ -15,7 +15,7 @@
 
 7) Indeterminismo: No se puede predecir el orden en el que serán ejecutadas las tareas/procesos/instrucciones en un programa concurrente
 
-8) Memoria privada y compartida:
+8) Memoria privada y compartida: La memoria privada se refiere a los datos, agrupados generalmente en alguna estructura, que son únicamente accesibles por un hilo de ejecución en particular. Por otra parte, la memoria compartida son aquellos datos que son accesidos por varios hilos de ejecución y es el mismo espacio de memoria.
 
 9) Espera activa:
 
