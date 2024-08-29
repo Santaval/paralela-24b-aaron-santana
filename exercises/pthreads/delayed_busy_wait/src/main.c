@@ -16,6 +16,7 @@
 typedef struct shared_data {
   uint64_t next_thread;
   uint64_t thread_count;
+  useconds_t delay;
 } shared_data_t;
 
 // thread_private_data_t
@@ -40,6 +41,15 @@ int main(int argc, char* argv[]) {
     if (sscanf(argv[1], "%" SCNu64, &thread_count) == 1) {
     } else {
       fprintf(stderr, "Error: invalid thread count\n");
+      return 11;
+    }
+  }
+
+  useconds_t delay = 50;
+  if (argc >= 3) {
+    if (sscanf(argv[2], "%u", &delay) == 1) {
+    } else {
+      fprintf(stderr, "Error: invalid delay\n");
       return 11;
     }
   }
@@ -119,7 +129,7 @@ void* greet(void* data) {
 
   // Wait until it is my turn
   while (shared_data->next_thread < private_data->thread_number) {
-    // busy-waiting
+    usleep(shared_data->delay);
   }  // end while
 
   // print "Hello from secondary thread"
