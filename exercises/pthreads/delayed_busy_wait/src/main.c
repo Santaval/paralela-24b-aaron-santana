@@ -23,6 +23,7 @@ typedef struct shared_data {
 typedef struct private_data {
   uint64_t thread_number;  // rank
   shared_data_t* shared_data;
+  unsigned seed;
 } private_data_t;
 
 /**
@@ -37,7 +38,7 @@ int main(int argc, char* argv[]) {
   // create thread_count as result of converting argv[1] to integer
   // thread_count := integer(argv[1])
   uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN);
-  if (argc == 2) {
+  if (argc >= 2) {
     if (sscanf(argv[1], "%" SCNu64, &thread_count) == 1) {
     } else {
       fprintf(stderr, "Error: invalid thread count\n");
@@ -53,9 +54,10 @@ int main(int argc, char* argv[]) {
       return 11;
     }
   }
-
   shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
+
   if (shared_data) {
+    shared_data->delay = delay;
     shared_data->next_thread = 0;
     shared_data->thread_count = thread_count;
 
@@ -129,7 +131,17 @@ void* greet(void* data) {
 
   // Wait until it is my turn
   while (shared_data->next_thread < private_data->thread_number) {
-    usleep(shared_data->delay);
+    #ifdef RANDOM_SLEEP
+      private_data->seed = time(NULL) + clock() + private_data->thread_number;
+      const useconds_t delay = rand_r(&private_data->seed) % shared_data->delay;
+      printf("%zu thread waiting random time: %u us\n", private_data->thread_number, delay);
+      usleep(delay);
+    #else 
+     const useconds_t delay = shared_data->delay;
+      printf("%zu thread waiting %u us\n", private_data->thread_number, delay);
+    #endif
+      usleep(delay);
+
   }  // end while
 
   // print "Hello from secondary thread"
