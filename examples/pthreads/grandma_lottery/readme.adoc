@@ -17,3 +17,7 @@ Modele la situación anterior, con la abuela como el hilo principal, y los dos n
 Utilice las herramientas de análisis dinámico de código para determinar cuál de las dos variantes anteriores produce el resultado correcto.
 
 Recuerde revisar que su solución no haga mal uso de la memoria ni la concurrencia, y de apegarse a la covención de estilos. Si usa `rand()`, el _linter_ advertirá de que este procedimiento no es _reentrante_. Puede usar el procedimiento `rand_r()` cuya documentación puede obtener en la línea de comandos con `man rand_r`.
+
+
+== Análisis de resultados
+Al implementar las dos variantes del programa, si se retorna la dirección de memoria de la variable en la que el hilo secundario tiene el número comprado, se obtiene un error de segmentación. Esto se debe a que la dirección de memoria retornada no es válida para el hilo principal. Por otro lado, si se retorna el número comprado como una falsa dirección de memoria, el programa se ejecuta sin errores. Esto se debe a que el valor retornado es un entero, el cual "puede hacerse pasar" como una dirección de memoria.
