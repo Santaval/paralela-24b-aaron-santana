@@ -21,3 +21,28 @@ Recuerde revisar que su solución no haga mal uso de la memoria ni la concurrenc
 
 == Análisis de resultados
 Al implementar las dos variantes del programa, si se retorna la dirección de memoria de la variable en la que el hilo secundario tiene el número comprado, se obtiene un error de segmentación. Esto se debe a que la dirección de memoria retornada no es válida para el hilo principal. Por otro lado, si se retorna el número comprado como una falsa dirección de memoria, el programa se ejecuta sin errores. Esto se debe a que el valor retornado es un entero, el cual "puede hacerse pasar" como una dirección de memoria.
+
+== Ejecución
+Para compilar y ejecutar el programa, ejecute el siguiente comando:
+
+[source,sh]
+----
+make run
+----
+
+Nota: Para compilar el programa, ejecute el comando `make` en un sistema operativo basado en Unix.
+
+
+== Sanitizers
+
+Para analizar el programa con los sanitizers (asan, tsan), ejecute el siguiente comando:
+
+[source,sh]
+----
+make clean asan run
+----
+
+[source,sh]
+----
+make clean tsan run
+----
