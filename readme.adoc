@@ -19,7 +19,7 @@
 
 9) Espera activa: Es una técnica que se para que un hilo de ejecución espere a que otro hilo de ejecución termine de ejecutarse. (No usar)
 
-10) Condición de carrera:
+10) Condición de carrera: Es un problema que se presenta en la programación concurrente cuando dos o más hilos de ejecución intentan acceder a un recurso compartido al mismo tiempo.
 
 11) Control de concurrencia:
 
