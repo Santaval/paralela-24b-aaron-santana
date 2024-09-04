@@ -21,7 +21,7 @@
 
 10) Condición de carrera: Es un problema que se presenta en la programación concurrente cuando dos o más hilos de ejecución intentan acceder a un recurso compartido al mismo tiempo.
 
-11) Control de concurrencia:
+11) Control de concurrencia: Es una técnica que se usa para evitar que dos o más hilos de ejecución accedan a un recurso compartido al mismo tiempo.
 
 12) Seguridad condicional:
 
