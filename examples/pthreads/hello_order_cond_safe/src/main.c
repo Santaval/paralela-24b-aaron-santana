@@ -13,59 +13,59 @@
 
 // thread_shared_data_t
 typedef struct shared_data {
-  char** greets;
-  uint64_t thread_count;
+  char** greets; // Array of strings to store greetings from each thread
+  uint64_t thread_count; // Number of threads to be created
 } shared_data_t;
 
 // thread_private_data_t
 typedef struct private_data {
-  uint64_t thread_number;  // rank
-  shared_data_t* shared_data;
+  uint64_t thread_number;  // Rank or ID of the thread
+  shared_data_t* shared_data; // Pointer to shared data structure
 } private_data_t;
 
 /**
- * @brief ...
+ * @brief Function to be executed by each thread
  */
 void* greet(void* data);
 int create_threads(shared_data_t* shared_data);
 
 // procedure main(argc, argv[])
 int main(int argc, char* argv[]) {
-  int error = EXIT_SUCCESS;
+  int error = EXIT_SUCCESS; // Variable to store error codes
   // create thread_count as result of converting argv[1] to integer
   // thread_count := integer(argv[1])
-  uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN);
+  uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN); // Default to number of processors
   if (argc == 2) {
-    if (sscanf(argv[1], "%" SCNu64, &thread_count) == 1) {
+    if (sscanf(argv[1], "%" SCNu64, &thread_count) == 1) { // Convert argument to integer
     } else {
-      fprintf(stderr, "Error: invalid thread count\n");
-      return 11;
+      fprintf(stderr, "Error: invalid thread count\n"); 
+      return 11; // Return error code
     }
   }
 
-  shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
+  shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t)); // Allocate memory for shared data
   if (shared_data) {
-    shared_data->greets = (char**) calloc(thread_count, sizeof(char*));
-    shared_data->thread_count = thread_count;
+    shared_data->greets = (char**) calloc(thread_count, sizeof(char*)); // Allocate memory for greetings array
+    shared_data->thread_count = thread_count; // Set thread count in shared data
 
     if (shared_data->greets) {
-      struct timespec start_time, finish_time;
+      struct timespec start_time, finish_time; 
       clock_gettime(CLOCK_MONOTONIC, &start_time);
 
-      error = create_threads(shared_data);
+      error = create_threads(shared_data); // Create threads
 
       clock_gettime(CLOCK_MONOTONIC, &finish_time);
       double elapsed_time = finish_time.tv_sec - start_time.tv_sec +
-        (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+        (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9; // Calculate elapsed time
 
       printf("Execution time: %.9lfs\n", elapsed_time);
 
-      free(shared_data->greets);
+      free(shared_data->greets); // Free memory allocated for greetings array
     } else {
       fprintf(stderr, "Error: could not allocate greets\n");
       error = 13;
     }
-    free(shared_data);
+    free(shared_data); // Free memory allocated for shared data
   } else {
     fprintf(stderr, "Error: could not allocate shared data\n");
     error = 12;
@@ -75,25 +75,25 @@ int main(int argc, char* argv[]) {
 
 
 int create_threads(shared_data_t* shared_data) {
-  int error = EXIT_SUCCESS;
+  int error = EXIT_SUCCESS; // Variable to store error codes
   // for thread_number := 0 to thread_count do
   pthread_t* threads = (pthread_t*)
-    malloc(shared_data->thread_count * sizeof(pthread_t));
+    malloc(shared_data->thread_count * sizeof(pthread_t)); // Allocate memory for thread handles
   private_data_t* private_data = (private_data_t*)
-    calloc(shared_data->thread_count, sizeof(private_data_t));
+    calloc(shared_data->thread_count, sizeof(private_data_t)); // Allocate memory for private data
   if (threads && private_data) {
     for (uint64_t thread_number = 0; thread_number < shared_data->thread_count
         ; ++thread_number) {
       shared_data->greets[thread_number] = (char*)
-        malloc(MAX_GREET_LEN * sizeof(char));
+        malloc(MAX_GREET_LEN * sizeof(char)); // Allocate memory for each greeting
       if (shared_data->greets[thread_number]) {
         // *shared_data->greets[thread_number] = '\0';
-        shared_data->greets[thread_number][0] = '\0';
-        private_data[thread_number].thread_number = thread_number;
-        private_data[thread_number].shared_data = shared_data;
+        shared_data->greets[thread_number][0] = '\0'; // Initialize greeting string
+        private_data[thread_number].thread_number = thread_number; // Set thread number in private data
+        private_data[thread_number].shared_data = shared_data; // Set shared data in private data
         // create_thread(greet, thread_number)
         error = pthread_create(&threads[thread_number], /*attr*/ NULL, greet
-          , /*arg*/ &private_data[thread_number]);
+          , /*arg*/ &private_data[thread_number]); // Create thread
         if (error == EXIT_SUCCESS) {
         } else {
           fprintf(stderr, "Error: could not create secondary thread\n");
@@ -107,12 +107,11 @@ int create_threads(shared_data_t* shared_data) {
       }
     }
 
-    // print "Hello from main thread"
     printf("Hello from main thread\n");
 
     for (uint64_t thread_number = 0; thread_number < shared_data->thread_count
         ; ++thread_number) {
-      pthread_join(threads[thread_number], /*value_ptr*/ NULL);
+      pthread_join(threads[thread_number], /*value_ptr*/ NULL); // Wait for all threads to finish
     }
 
     // for thread_number := 0 to thread_count do
@@ -120,11 +119,11 @@ int create_threads(shared_data_t* shared_data) {
         ; ++thread_number) {
       // print greets[thread_number]
       printf("%s\n", shared_data->greets[thread_number]);
-      free(shared_data->greets[thread_number]);
+      free(shared_data->greets[thread_number]); // Free memory allocated for each greeting
     }  // end for
 
-    free(private_data);
-    free(threads);
+    free(private_data); // Free memory allocated for private data
+    free(threads); // Free memory allocated for thread handles
   } else {
     fprintf(stderr, "Error: could not allocate %" PRIu64 " threads\n"
       , shared_data->thread_count);
@@ -136,18 +135,18 @@ int create_threads(shared_data_t* shared_data) {
 
 // procedure greet:
 void* greet(void* data) {
-  assert(data);
-  private_data_t* private_data = (private_data_t*) data;
-  shared_data_t* shared_data = private_data->shared_data;
+  assert(data); // Ensure data is not NULL
+  private_data_t* private_data = (private_data_t*) data; // Cast data to private_data_t
+  shared_data_t* shared_data = private_data->shared_data; // Get shared data from private data
 
   printf("  %" PRIu64 "/%" PRIu64 ": write greeting\n"
-    , private_data->thread_number, shared_data->thread_count);
+    , private_data->thread_number, shared_data->thread_count); // Print message indicating thread is writing greeting
 
   // greets[thread_number] := format("Hello from secondary thread"
   // , thread_number, " of ", thread_count)
   sprintf(shared_data->greets[private_data->thread_number]
     , "Hello from secondary thread %" PRIu64 " of %" PRIu64
-    , private_data->thread_number, shared_data->thread_count);
+    , private_data->thread_number, shared_data->thread_count); // Write greeting to shared data
 
-  return NULL;
+  return NULL; // Return NULL
 }  // end procedure
