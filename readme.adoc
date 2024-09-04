@@ -19,11 +19,11 @@
 
 9) Espera activa: Es una técnica que se para que un hilo de ejecución espere a que otro hilo de ejecución termine de ejecutarse. (No usar)
 
-10) Condición de carrera: Es un problema que se presenta en la programación concurrente cuando dos o más hilos de ejecución intentan acceder a un recurso compartido al mismo tiempo.
+10) Condición de carrera: Es un problema que se presenta en la programación concurrente cuando dos o más hilos de ejecución intentan acceder a un recurso compartido al mismo tiempo. Por ejemplo, si dos hilos de ejecución intentan modificar una variable al mismo tiempo como resultado de una operación de suma.
 
 11) Control de concurrencia: Es una técnica que se usa para evitar que dos o más hilos de ejecución accedan a un recurso compartido al mismo tiempo.
 
-12) Seguridad condicional:
+12) Seguridad condicional: Uso de ciertas condiciones para garantizar la seguridad de los datos y evitar problemas de concurrencia. Por ejemplo, el uso de semáforos. A diferencia del control de concurrencia que utiliza una gran variedad de técnicas, la seguridad condicional se enfoca en el uso de condiciones.
 
 13) Exclusión mutua:
 
