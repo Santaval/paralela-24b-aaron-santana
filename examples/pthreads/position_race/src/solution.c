@@ -8,15 +8,24 @@
 #include <unistd.h>
 
 // thread_shared_data_t
+
+// we define a struct that will be used to store the shared data between the threads
+
 typedef struct shared_data {
+    // this is the position, this will be used to store the position of the thread
   uint64_t position;
+  // this is the mutex, this will be used to check if a thread can access the position and modify it 
   pthread_mutex_t can_access_position;
+    // this is the thread count, this will be used to store the number of threads that will be created
   uint64_t thread_count;
 } shared_data_t;
 
 // thread_private_data_t
+// also, we define a struct that will be used to store the private data of each thread
 typedef struct private_data {
+    // this is the thread number, this will be used to store the rank of the thread
   uint64_t thread_number;  // rank
+  // this is the shared data, this will be used to store the shared data between the threads
   shared_data_t* shared_data;
 } private_data_t;
 
@@ -39,10 +48,13 @@ int main(int argc, char* argv[]) {
       return 11;
     }
   }
-
+    // init the shared data
   shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
   if (shared_data) {
     shared_data->position = 0;
+
+    // init mutex that receives shared_data->can_access_position as parameter, 
+    // this will be used to check if a thread can access the position and modify it
     error = pthread_mutex_init(&shared_data->can_access_position, /*attr*/NULL);
     if (error == EXIT_SUCCESS) {
       shared_data->thread_count = thread_count;
@@ -58,6 +70,7 @@ int main(int argc, char* argv[]) {
 
       printf("Execution time: %.9lfs\n", elapsed_time);
 
+      // finally, destroy the mutex and free the shared data
       pthread_mutex_destroy(&shared_data->can_access_position);
       free(shared_data);
     } else {
@@ -121,6 +134,7 @@ void* race(void* data) {
   shared_data_t* shared_data = private_data->shared_data;
 
   // lock(can_access_position)
+  // lock the mutex, that indicates that the thread is going to access the shared data and other threads can't access it
   pthread_mutex_lock(&shared_data->can_access_position);
   // race condition/data race/condición de carrera:
   // modificación concurrente de memoria compartida
@@ -133,6 +147,7 @@ void* race(void* data) {
     , private_data->thread_number, shared_data->thread_count, my_position);
 
   // unlock(can_access_position)
+  // after the thread has accessed the shared data, it unlocks the mutex, so other threads can access it
   pthread_mutex_unlock(&shared_data->can_access_position);
   return NULL;
 }  // end procedure
