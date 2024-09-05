@@ -1,4 +1,4 @@
-rocedure main(argc, argv[])
+rocedure main(argc, argv[]) do
   shared can_hit_pinata := create_mutex()
   shared thread_count := integer(argv[1])
   shared pinata_hits_remaining := interger(argv[2])
@@ -13,6 +13,7 @@ procedure partyGuest(thread_number) do
   declare do_I_broke_pinata := false
   while (pinata_hits_remaining > 0) do
     lock(can_hit_pinata)
+    my_hits := my_hits + 1
     pinata_hits_remaining := pinata_hits_remaining - 1
     unlock(can_hit_pinata)
     if (pinata_hits_remaining == 0) do
