@@ -43,20 +43,21 @@ SimulationResult processJob(JobData jobData) {
 }
 
 SimulationResult simulate(JobData jobData, Plate plate) {
-  Plate previousPlate = copyPlate(plate);
-  Plate currentPlate = copyPlate(plate);
+  Plate previousPlate = plate;
+  Plate currentPlate = plate;
   size_t iterationsCount = 0;
 
   do {
-    destroyPlate(previousPlate);
-    previousPlate = copyPlate(currentPlate);
-    destroyPlate(currentPlate);
+    if (iterationsCount > 0) {
+      destroyPlate(previousPlate);
+    }
+    previousPlate = currentPlate;
     currentPlate = simulationIteration(jobData, previousPlate);
     iterationsCount++;
   } while (!isPlateBalanced(currentPlate, previousPlate, jobData.balancePoint));
 
   // free memory
-  destroyPlate(previousPlate);
+  //destroyPlate(previousPlate);
   SimulationResult result;
   result.plate = currentPlate;
   result.iterations = iterationsCount;
@@ -67,16 +68,21 @@ Plate copyPlate(Plate plate) {
   Plate newPlate;
   newPlate.rows = plate.rows;
   newPlate.cols = plate.cols;
-  newPlate.data = malloc(plate.rows * sizeof(double*));
-  for (size_t i = 0; i < plate.rows; i++) {
-    newPlate.data[i] = malloc(plate.cols * sizeof(double));
-    memcpy(newPlate.data[i], plate.data[i], plate.cols * sizeof(double));
-  }
+  newPlate.data = plate.data;
   return newPlate;
 }
 
 Plate simulationIteration(JobData jobData, Plate plate) {
-  Plate newPlate = copyPlate(plate);
+  Plate newPlate;
+  newPlate.rows = plate.rows;
+  newPlate.cols = plate.cols;
+
+  // Allocate memory for the new plate
+  newPlate.data = (double **)malloc(plate.rows * sizeof(double *));
+  for (size_t i = 0; i < plate.rows; i++) {
+    newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
+  }
+
   for (size_t i = 1; i < plate.rows - 1; i++) {
     for (size_t j = 1; j < plate.cols - 1; j++) {
       double left = plate.data[i][j - 1];
