@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "types.h"
 
+#define MAX_PATH_SIZE 100
+
 Arguments processArguments(int argc, char **argv) {
   const int AGUMENTS_COUNT = 3;  // 3 arguments are expected
   Arguments args;
@@ -21,32 +23,33 @@ Arguments processArguments(int argc, char **argv) {
 }
 
 JobData *readJobData(const char *jobFile) {
-  FILE *file = fopen(jobFile, "r"); 
+  FILE *file = fopen(jobFile, "r");
   if (file == NULL) {
     fprintf(stderr, "Error opening file: %s\n", jobFile);
     exit(EXIT_FAILURE);
   }
 
   // get the directory from the job file
-  char directory[100];
-  getDirectory(jobFile, directory, 100);
+  char directory[MAX_PATH_SIZE];
+  getDirectory(jobFile, directory, MAX_PATH_SIZE);
 
   // Read the number of jobs based on the number of lines in the file
   size_t jobs = calcFileLinesCount(jobFile);
   JobData *jobData = malloc(jobs * sizeof(JobData));
 
-  assert(jobData != NULL); // Check if memory allocation was successful
+  assert(jobData != NULL);  // Check if memory allocation was successful
 
   // Read the job data from the file and store it in the array
   for (size_t i = 0; i < jobs; i++) {
-    jobData[i].plateFile = malloc(100 * sizeof(char));
-    jobData[i].directory = malloc(100 * sizeof(char));
+    jobData[i].plateFile = malloc(MAX_PATH_SIZE * sizeof(char));
+    jobData[i].directory = malloc(MAX_PATH_SIZE * sizeof(char));
     fscanf(file, "%s", jobData[i].plateFile);
     fscanf(file, "%lf", &jobData[i].duration);
     fscanf(file, "%lf", &jobData[i].thermalDiffusivity);
     fscanf(file, "%lf", &jobData[i].plateCellDimmensions);
     fscanf(file, "%lf", &jobData[i].balancePoint);
-    strcpy(jobData[i].directory, directory);
+    snprintf(jobData[i].directory, MAX_PATH_SIZE,
+      "%s", directory);
   }
   fclose(file);
   return jobData;
@@ -76,7 +79,7 @@ Plate readPlate(const char *binaryFilepath, char *directory) {
   FILE *binaryFile;
   size_t rows, cols;
   double **matrix;
-  char path[100];
+  char path[MAX_PATH_SIZE];
   sprintf(path, "%s/%s", directory, binaryFilepath);
   binaryFile = fopen(path, "rb");
 

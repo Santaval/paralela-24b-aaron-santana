@@ -15,7 +15,6 @@ void printPlate(Plate plate) {
   printf("\n");
 
   printf("Plate is balanced: %s\n", plate.isBalanced ? "true" : "false");
-  
 }
 
 
@@ -48,7 +47,6 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
   char* path = malloc(100 * sizeof(char));
   extractNumbers(jobsData[0].plateFile, jobNumbers);
   sprintf(path, "%s/job%s.tsv", jobsData[0].directory, jobNumbers);
-  
   printf("Writing results to %s\n", path);
   file = fopen(path, "w");
 
@@ -91,7 +89,7 @@ void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
   fprintf(file, "\n");
 }
 
- void removeExtension(char *filepath) {
+void removeExtension(char *filepath) {
     char *last_dot = strrchr(filepath, '.');
 
     if (last_dot != NULL) {
@@ -107,5 +105,5 @@ void extractNumbers(const char *filename, char *numbers) {
         }
         filename++;
     }
-    *numbers = '\0'; // Null-terminate the result string
+    *numbers = '\0';  // Null-terminate the result string
 }

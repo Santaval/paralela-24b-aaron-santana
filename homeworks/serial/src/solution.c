@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   size_t jobsCount = calcFileLinesCount(args.jobFile);
   SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
   assert(results != NULL);
-  // print jpbs count 
+  // print jpbs count
   printf("JC=%zu\n", jobsCount);
   for (size_t i = 0; i < jobsCount; i++) {
     results[i] = processJob(jobsData[i]);
@@ -74,8 +74,6 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   for (size_t i = 0; i < plate.rows; i++) {
     newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
   }
-
-  
   copyPlateBorders(plate, newPlate);
 
   for (size_t i = 1; i < plate.rows - 1; i++) {
@@ -98,27 +96,27 @@ Plate simulationIteration(JobData jobData, Plate plate) {
 }
 
 void copyPlateBorders(Plate original, Plate copy) {
-
   // top
   for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
     copy.data[0][colIndex] = original.data[0][colIndex];
   }
 
-  // left 
+  // left
   for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
     copy.data[rowIndex][0] = original.data[rowIndex][0];
   }
 
-  // right 
+  // right
   for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
-    copy.data[rowIndex][original.cols - 1] = original.data[rowIndex][original.cols - 1];
+    copy.data[rowIndex][original.cols - 1]
+      = original.data[rowIndex][original.cols - 1];
   }
 
   // bottom
   for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
-    copy.data[original.rows - 1][colIndex] = original.data[original.rows - 1][colIndex];
+    copy.data[original.rows - 1][colIndex]
+      = original.data[original.rows - 1][colIndex];
   }
-
 }
 
 
