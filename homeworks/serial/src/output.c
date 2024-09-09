@@ -13,6 +13,9 @@ void printPlate(Plate plate) {
   }
 
   printf("\n");
+
+  printf("Plate is balanced: %s\n", plate.isBalanced ? "true" : "false");
+  
 }
 
 

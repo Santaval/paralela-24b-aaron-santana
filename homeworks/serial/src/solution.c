@@ -21,7 +21,8 @@ int main(int argc, char** argv) {
   size_t jobsCount = calcFileLinesCount(args.jobFile);
   SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
   assert(results != NULL);
-
+  // print jpbs count 
+  printf("JC=%zu\n", jobsCount);
   for (size_t i = 0; i < jobsCount; i++) {
     results[i] = processJob(jobsData[i]);
   }
@@ -37,8 +38,6 @@ int main(int argc, char** argv) {
 SimulationResult processJob(JobData jobData) {
   Plate plate = readPlate(jobData.plateFile, jobData.directory);
   SimulationResult result = simulate(jobData, plate);
-  // free memory
-  destroyPlate(plate);
   return result;
 }
 
@@ -54,34 +53,30 @@ SimulationResult simulate(JobData jobData, Plate plate) {
     previousPlate = currentPlate;
     currentPlate = simulationIteration(jobData, previousPlate);
     iterationsCount++;
-  } while (!isPlateBalanced(currentPlate, previousPlate, jobData.balancePoint));
+  } while (!currentPlate.isBalanced);
 
   // free memory
-  //destroyPlate(previousPlate);
+  destroyPlate(previousPlate);
   SimulationResult result;
   result.plate = currentPlate;
   result.iterations = iterationsCount;
   return result;
 }
 
-Plate copyPlate(Plate plate) {
-  Plate newPlate;
-  newPlate.rows = plate.rows;
-  newPlate.cols = plate.cols;
-  newPlate.data = plate.data;
-  return newPlate;
-}
-
 Plate simulationIteration(JobData jobData, Plate plate) {
   Plate newPlate;
   newPlate.rows = plate.rows;
   newPlate.cols = plate.cols;
+  newPlate.isBalanced = 1;
 
   // Allocate memory for the new plate
   newPlate.data = (double **)malloc(plate.rows * sizeof(double *));
   for (size_t i = 0; i < plate.rows; i++) {
     newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
   }
+
+  
+  copyPlateBorders(plate, newPlate);
 
   for (size_t i = 1; i < plate.rows - 1; i++) {
     for (size_t j = 1; j < plate.cols - 1; j++) {
@@ -90,25 +85,42 @@ Plate simulationIteration(JobData jobData, Plate plate) {
       double up = plate.data[i - 1][j];
       double down = plate.data[i + 1][j];
       double cell = plate.data[i][j];
-      newPlate.data[i][j] = cell + ((jobData.duration * jobData
+      double newTemperature = cell + ((jobData.duration * jobData
       .thermalDiffusivity) / (jobData.plateCellDimmensions *
         jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
+      newPlate.data[i][j] = newTemperature;
+      if ((newTemperature - cell) > jobData.balancePoint) {
+        newPlate.isBalanced = 0;
+      }
     }
   }
   return newPlate;
 }
 
-bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
-  double balancePoint) {
-  for (size_t i = 0; i < currentPlate.rows; i++) {
-    for (size_t j = 0; j < currentPlate.cols; j++) {
-      if (currentPlate.data[i][j] - previousPlate.data[i][j] > balancePoint) {
-        return false;
-      }
-    }
+void copyPlateBorders(Plate original, Plate copy) {
+
+  // top
+  for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
+    copy.data[0][colIndex] = original.data[0][colIndex];
   }
-  return true;
+
+  // left 
+  for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
+    copy.data[rowIndex][0] = original.data[rowIndex][0];
+  }
+
+  // right 
+  for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
+    copy.data[rowIndex][original.cols - 1] = original.data[rowIndex][original.cols - 1];
+  }
+
+  // bottom
+  for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
+    copy.data[original.rows - 1][colIndex] = original.data[original.rows - 1][colIndex];
+  }
+
 }
+
 
 void format_time(time_t seconds, char *buffer, size_t buffer_size) {
     int years, months, days, hours, minutes, secs;

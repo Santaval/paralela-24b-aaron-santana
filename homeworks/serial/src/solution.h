@@ -26,12 +26,15 @@ SimulationResult processJob(JobData jobData);
 SimulationResult simulate(JobData jobData, Plate plate);
 
 /**
- * Creates a copy of the given Plate object.
+ * @brief Copies the borders of the original plate to the copy plate.
  *
- * @param plate The Plate object to be copied.
- * @return A new Plate object that is a copy of the original plate.
+ * This function copies the borders of the original plate to the copy plate.
+ * The original plate and the copy plate must have the same dimensions.
+ *
+ * @param original The original plate.
+ * @param copy The copy plate.
  */
-Plate copyPlate(Plate plate);
+void copyPlateBorders(Plate original, Plate copy);
 
 /**
  * Simulates a single iteration of the plate simulation.
@@ -42,16 +45,6 @@ Plate copyPlate(Plate plate);
  */
 Plate simulationIteration(JobData JobData, Plate plate);
 
-/**
- * Checks if a plate is balanced based on the current plate, previous plate, and balance point.
- *
- * @param currentPlate The current plate to check.
- * @param previousPlate The previous plate to compare with.
- * @param balancePoint The balance point to determine if the plate is balanced.
- * @return True if the plate is balanced, false otherwise.
- */
-bool isPlateBalanced(Plate currentPlate, Plate previousPlate,
-    double balancePoint);
 
 /**
  * @brief Destroys the JobData array and frees the memory.

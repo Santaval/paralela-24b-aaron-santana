@@ -9,6 +9,7 @@
 
 typedef struct  {
     double** data;
+    short isBalanced;
     size_t rows;
     size_t cols;
 } Plate;

@@ -98,6 +98,7 @@ Plate readPlate(const char *binaryFilepath, char *directory) {
   plate.data = matrix;
   plate.rows = rows;
   plate.cols = cols;
+  plate.isBalanced = 0;
   return plate;
 }
 
