@@ -75,17 +75,22 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   }
   copyPlateBorders(plate, newPlate);
 
-  struct thread_team* team = create_threads(4, calcNewTemperature, NULL); 
+  const size_t STATIC_THREAD_COUNT = 4;
+
+  SharedData* sharedData = malloc(sizeof(SharedData));
+  sharedData->currentPlate = plate;
+  sharedData->newPlate = newPlate;
+  sharedData->threadCount = STATIC_THREAD_COUNT;
+
+  struct thread_team* team = create_threads(STATIC_THREAD_COUNT, calcNewTemperature, sharedData);
+  team
+
+  free(sharedData);
   
   if (team) {
     printf("Threads created\n");
   }
 
-  for (size_t i = 1; i < plate.rows - 1; i++) {
-    for (size_t j = 1; j < plate.cols - 1; j++) {
-      // calcNewTemperature(plate, newPlate, jobData, i, j);
-    }
-  }
   return newPlate;
 }
 
