@@ -8,6 +8,7 @@
 #include "input.h"
 #include "solution.h"
 #include "output.h"
+#include "ethreads/ethread.h"
 
 
 /**
@@ -73,6 +74,12 @@ Plate simulationIteration(JobData jobData, Plate plate) {
     newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
   }
   copyPlateBorders(plate, newPlate);
+
+  struct thread_team* team = create_threads(4, calcNewTemperature, NULL); 
+  
+  if (team) {
+    printf("Threads created\n");
+  }
 
   for (size_t i = 1; i < plate.rows - 1; i++) {
     for (size_t j = 1; j < plate.cols - 1; j++) {
