@@ -51,3 +51,21 @@ typedef struct {
     Plate plate;  /// < plate resulting from the simulation
     size_t iterations;  /// < number of iterations performed in the simulation
 } SimulationResult;
+
+/**
+ * @struct SharedDate
+ * @brief Structure representing shared data for threads.
+ *
+ * This structure holds information that is shared among multiple threads.
+ * It contains the number of threads, the current plate, and the new plate.
+ */
+typedef struct {
+    size_t threadCount;  /// < number of threads
+    Plate currentPlate;  /// < current plate
+    Plate newPlate;  /// < new plate
+} SharedData;
+
+typedef struct {
+    SharedData* sharedData;  /// < pointer to shared data
+} PrivateData;
+
