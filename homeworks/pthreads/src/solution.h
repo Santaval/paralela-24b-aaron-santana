@@ -45,6 +45,17 @@ void copyPlateBorders(Plate original, Plate copy);
  */
 Plate simulationIteration(JobData JobData, Plate plate);
 
+/**
+ * Calculates the new temperature for a specific cell in the plate.
+ *
+ * @param currentPlate The current state of the plate.
+ * @param newPlate The new state of the plate.
+ * @param jobData The data for the current job.
+ * @param currentCellRow The row index of the current cell.
+ * @param currentCellCol The column index of the current cell.
+ */
+void calcNewTemperature(Plate currentPlate, Plate newPlate, JobData jobData, size_t currentCellRow, size_t currentCellCol);
+
 
 /**
  * @brief Destroys the JobData array and frees the memory.
