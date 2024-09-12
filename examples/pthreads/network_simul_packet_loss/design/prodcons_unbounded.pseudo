@@ -1,19 +1,22 @@
 const bufferSize := 1024
 
-procedure main() do
-    shared buffer := createBuffer[bufferSize]
+procedure main(argc, argv[]) do
+    shared queue := createQueue()
+
+    shared can_access_queue := createSemaphore(1)
     shared canConsume := createSemaphore(0)
     shared canProduce := createSemaphore(bufferSize)
-    createThread(produce)
-    createThread(consume)
+    createThreas(interger(argv[1]), produce)
+    createThread(integer(argv[2]), consume)
 end
 
 procedure produce() do
-    declare counter := 0
     while (true) do
         wait(canProduce)
         declare product := createProduct()
-        buffer[mod(counter++, bufferSize)] := product
+        lock(can_access_queue)
+        enqueue(buffer, product)
+        unlock(can_access_queue)
         signal(canConsume)
     end
 end
@@ -22,7 +25,9 @@ procedure consume() do
     declare counter := 0
     while (true) do
         wait(canConsume)
-        declare product := buffer[mod(counter++, bufferSize)]
+        lock(can_access_queue)
+        declare product := dequeue(queue)
+        unlock(can_access_queue)
         consumeProduct(product)
         signal(canProduce)
      end
