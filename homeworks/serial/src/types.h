@@ -8,10 +8,10 @@
  */
 
 typedef struct  {
-    double** data;
-    short isBalanced;
-    size_t rows;
-    size_t cols;
+    double** data; /// < matrix of doubles representing the plate
+    short isBalanced; /// < 1 if the plate is balanced, 0 otherwise
+    size_t rows; /// < number of rows in the plate
+    size_t cols; /// < number of columns in the plate
 } Plate;
 
 /**
@@ -21,8 +21,8 @@ typedef struct  {
  * This struct contains the job file path and the number of threads to be used.
  */
 typedef struct {
-    char* jobFile;
-    size_t threadsCount;
+    char* jobFile; /// < path to the job file
+    size_t threadsCount; /// < number of threads to be used
 } Arguments;
 
 /**
@@ -34,12 +34,12 @@ typedef struct {
  * and the balance point.
  */
 typedef struct {
-    char* plateFile;
-    double duration;
-    double thermalDiffusivity;
-    double plateCellDimmensions;
-    double balancePoint;
-    char* directory;
+    char* plateFile; /// < path to the file containing the plate data
+    double duration; /// < duration of each iteration in the simulation
+    double thermalDiffusivity; /// < thermal diffusivity of the plate
+    double plateCellDimmensions; /// < dimensions of the plate cells
+    double balancePoint; /// < balance point of the plate
+    char* directory; /// < directory where the results will be written
 } JobData;
 
 /**
@@ -48,6 +48,6 @@ typedef struct {
  * This structure contains a 2D array representing a plate and the number of iterations performed in the simulation.
  */
 typedef struct {
-    Plate plate;
-    size_t iterations;
+    Plate plate; /// < plate resulting from the simulation
+    size_t iterations; /// < number of iterations performed in the simulation
 } SimulationResult;
