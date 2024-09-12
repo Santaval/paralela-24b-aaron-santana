@@ -54,7 +54,7 @@ Plate simulationIteration(JobData JobData, Plate plate);
  * @param currentCellRow The row index of the current cell.
  * @param currentCellCol The column index of the current cell.
  */
-void calcNewTemperature(Plate currentPlate, Plate newPlate, JobData jobData, size_t currentCellRow, size_t currentCellCol);
+void* calcNewTemperature(void* data);
 
 
 /**

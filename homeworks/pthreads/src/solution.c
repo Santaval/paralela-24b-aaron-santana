@@ -83,25 +83,26 @@ Plate simulationIteration(JobData jobData, Plate plate) {
 
   for (size_t i = 1; i < plate.rows - 1; i++) {
     for (size_t j = 1; j < plate.cols - 1; j++) {
-      calcNewTemperature(plate, newPlate, jobData, i, j);
+      // calcNewTemperature(plate, newPlate, jobData, i, j);
     }
   }
   return newPlate;
 }
 
-void calcNewTemperature(Plate currentPlate, Plate newPlate, JobData jobData, size_t currentCellRow, size_t currentCellCol) {
-  double left = currentPlate.data[currentCellRow][currentCellCol - 1];
-      double right = currentPlate.data[currentCellRow][currentCellCol + 1];
-      double up = currentPlate.data[currentCellRow - 1][currentCellCol];
-      double down = currentPlate.data[currentCellRow + 1][currentCellCol];
-      double cell = currentPlate.data[currentCellRow][currentCellCol];
-      double newTemperature = cell + ((jobData.duration * jobData
-      .thermalDiffusivity) / (jobData.plateCellDimmensions *
-        jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
-      newPlate.data[currentCellRow][currentCellCol] = newTemperature;
-      if ((newTemperature - cell) > jobData.balancePoint) {
-        newPlate.isBalanced = 0;
-      }
+void* calcNewTemperature(void* data) {
+
+  // double left = currentPlate.data[currentCellRow][currentCellCol - 1];
+  //   double right = currentPlate.data[currentCellRow][currentCellCol + 1];
+  //   double up = currentPlate.data[currentCellRow - 1][currentCellCol];
+  //   double down = currentPlate.data[currentCellRow + 1][currentCellCol];
+  //   double cell = currentPlate.data[currentCellRow][currentCellCol];
+  //   double newTemperature = cell + ((jobData.duration * jobData
+  //   .thermalDiffusivity) / (jobData.plateCellDimmensions *
+  //     jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
+  //   newPlate.data[currentCellRow][currentCellCol] = newTemperature;
+  //   if ((newTemperature - cell) > jobData.balancePoint) {
+  //     newPlate.isBalanced = 0;
+  //   }
 }
 
 void copyPlateBorders(Plate original, Plate copy) {
