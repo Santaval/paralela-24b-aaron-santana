@@ -77,10 +77,10 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
 
 void writeJobResult(JobData jobData, SimulationResult result, FILE* file) {
   fprintf(file, "%s ", jobData.plateFile);
-  fprintf(file, "%lf ", jobData.duration);
-  fprintf(file, "%lf ", jobData.thermalDiffusivity);
-  fprintf(file, "%lf ", jobData.plateCellDimmensions);
-  fprintf(file, "%lf ", jobData.balancePoint);
+  fprintf(file, "%.0f ", jobData.duration);
+  fprintf(file, "%.0f ", jobData.thermalDiffusivity);
+  fprintf(file, "%.0f ", jobData.plateCellDimmensions);
+  fprintf(file, "%.1f ", jobData.balancePoint);
   fprintf(file, "%zu ", result.iterations);
   const time_t seconds = result.iterations * jobData.duration;
     char formatted_time[48];
