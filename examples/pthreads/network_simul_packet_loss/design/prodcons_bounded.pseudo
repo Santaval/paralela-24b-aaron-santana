@@ -1,0 +1,27 @@
+const bufferSize := 1024
+
+procedure main() do
+    shared buffer := createBuffer[bufferSize]
+    shared canConsume := createSemaphore(0)
+    shared canProduce := createSemaphore(bufferSize)
+    createThread(produce)
+    createThread(consume)
+end
+
+procedure produce() do
+    while (true) do
+        wait(canProduce)
+        declare product := createProduct()
+        buffer[mod(counter, bufferSize)] := product
+        signal(canConsume)
+    end
+end
+
+procedure consume() do
+    while (true) do
+        wait(canConsume)
+        declare product := buffer[mod(counter, bufferSize)]
+        consumeProduct(product)
+        signal(canProduce)
+     end
+end
