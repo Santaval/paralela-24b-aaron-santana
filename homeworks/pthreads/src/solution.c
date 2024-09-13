@@ -74,7 +74,8 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   }
   copyPlateBorders(plate, newPlate);
 
-  const size_t STATIC_THREAD_COUNT = 1;
+  const size_t STATIC_THREAD_COUNT = 100;
+
 
 
   SharedData* sharedData = malloc(sizeof(SharedData));
@@ -83,15 +84,18 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   sharedData->threadCount = STATIC_THREAD_COUNT;
   sharedData->jobData = jobData;
 
+  pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
+
 
   struct thread_team* team = create_threads(STATIC_THREAD_COUNT, calcNewTemperature, sharedData);
   join_threads(team);
   
-  printPlate(plate);
-  printPlate(newPlate);
+  pthread_mutex_destroy(&sharedData->can_accsess_isBalanced);
+  // printPlate(plate);
+  Plate resultPlate = sharedData->newPlate;
   free(sharedData);
 
-  return newPlate;
+  return resultPlate;
 }
 
 void* calcNewTemperature(void* privateData) {
@@ -115,29 +119,16 @@ void* calcNewTemperature(void* privateData) {
       double down = sharedData->currentPlate.data[currentCellRow + 1][currentCellCol];
       double cell = sharedData->currentPlate.data[currentCellRow][currentCellCol];
 
-
-      printf("Thread %zu working on cell %zu, %zu\n", get_thread_number(privateData), currentCellRow, currentCellCol);
-      printf("Job data duration %f\n", jobData.duration);
-      printf("Job data thermal diffusivity %f\n", jobData.thermalDiffusivity);
-      printf("Job data plate cell dimmensions %f\n", jobData.plateCellDimmensions);
-      printf("Left %f\n", left);
-      printf("Right %f\n", right);
-      printf("Up %f\n", up);
-      printf("Down %f\n", down);
-      printf("Cell %f\n", cell);
-
       double newTemperature = cell + ((jobData.duration * jobData
       .thermalDiffusivity) / (jobData.plateCellDimmensions *
         jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
 
-      printf("Thread %zu new temperature %f\n \n", get_thread_number(privateData), newTemperature);
-
-
       sharedData->newPlate.data[currentCellRow][currentCellCol] = newTemperature;
       if ((newTemperature - cell) > jobData.balancePoint) {
+        pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
         sharedData->newPlate.isBalanced = 0;
+        pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
       }
-      // printPlate(sharedData->newPlate);
 
       cellNumber += get_thread_count(privateData);
   }

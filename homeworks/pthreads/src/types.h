@@ -2,6 +2,7 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 /**
  * @brief Structure representing a plate with data, number of rows, and number of columns.
@@ -64,6 +65,7 @@ typedef struct {
     Plate currentPlate;  /// < current plate
     Plate newPlate;  /// < new plate
     JobData jobData;  /// < job data
+    pthread_mutex_t can_accsess_isBalanced;  /// < mutex for accessing isBalanced
 } SharedData;
 
 typedef struct {
