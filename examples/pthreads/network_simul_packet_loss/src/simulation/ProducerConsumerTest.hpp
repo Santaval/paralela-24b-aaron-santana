@@ -11,6 +11,7 @@
 #include "common.hpp"
 
 // Forward declarations
+class AssemblerTest;
 class ConsumerTest;
 class DispatcherTest;
 class ProducerTest;
@@ -33,6 +34,9 @@ class ProducerConsumerTest {
   int dispatcherDelay = 0;
   /// Delay of consumer to consume a package, negative for max random
   int consumerDelay = 0;
+  /// package loss percentage
+  double packageLossPercentage = 0.0;
+
 
  private:
   /// Producer of the simulated network messages
@@ -41,6 +45,8 @@ class ProducerConsumerTest {
   DispatcherTest* dispatcher = nullptr;
   /// Consumers of the simulated network messages
   std::vector<ConsumerTest*> consumers;
+  /// Assembler of the simulated network messages
+  AssemblerTest* assembler = nullptr;
 
  public:
   /// Constructor
