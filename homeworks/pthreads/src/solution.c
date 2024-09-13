@@ -44,7 +44,6 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   Plate previousPlate = plate;
   Plate currentPlate = plate;
   size_t iterationsCount = 0;
-
   do {
     if (iterationsCount > 0) {
       destroyPlate(previousPlate);
@@ -75,39 +74,77 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   }
   copyPlateBorders(plate, newPlate);
 
-  const size_t STATIC_THREAD_COUNT = 4;
+  const size_t STATIC_THREAD_COUNT = 1;
+
 
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->currentPlate = plate;
   sharedData->newPlate = newPlate;
   sharedData->threadCount = STATIC_THREAD_COUNT;
+  sharedData->jobData = jobData;
+
 
   struct thread_team* team = create_threads(STATIC_THREAD_COUNT, calcNewTemperature, sharedData);
-  team
-
-  free(sharedData);
+  join_threads(team);
   
-  if (team) {
-    printf("Threads created\n");
-  }
+  printPlate(plate);
+  printPlate(newPlate);
+  free(sharedData);
 
   return newPlate;
 }
 
-void* calcNewTemperature(void* data) {
+void* calcNewTemperature(void* privateData) {
+  SharedData* sharedData = (SharedData*) get_shared_data(privateData);
+  size_t cellNumber = get_thread_number(privateData);
 
-  // double left = currentPlate.data[currentCellRow][currentCellCol - 1];
-  //   double right = currentPlate.data[currentCellRow][currentCellCol + 1];
-  //   double up = currentPlate.data[currentCellRow - 1][currentCellCol];
-  //   double down = currentPlate.data[currentCellRow + 1][currentCellCol];
-  //   double cell = currentPlate.data[currentCellRow][currentCellCol];
-  //   double newTemperature = cell + ((jobData.duration * jobData
-  //   .thermalDiffusivity) / (jobData.plateCellDimmensions *
-  //     jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
-  //   newPlate.data[currentCellRow][currentCellCol] = newTemperature;
-  //   if ((newTemperature - cell) > jobData.balancePoint) {
-  //     newPlate.isBalanced = 0;
-  //   }
+  JobData jobData = sharedData->jobData;
+
+  while (cellNumber < sharedData->currentPlate.rows * sharedData->currentPlate.cols - 1) {
+    size_t currentCellRow = cellNumber / sharedData->currentPlate.cols;
+    size_t currentCellCol = cellNumber % sharedData->currentPlate.cols;
+
+    if (currentCellRow == 0 || currentCellRow == sharedData->currentPlate.rows - 1
+        || currentCellCol == 0 || currentCellCol == sharedData->currentPlate.cols - 1) {
+      cellNumber += sharedData->threadCount;
+    } else {
+      //printPlate(sharedData->newPlate);
+      double left = sharedData->currentPlate.data[currentCellRow][currentCellCol - 1];
+      double right = sharedData->currentPlate.data[currentCellRow][currentCellCol + 1];
+      double up = sharedData->currentPlate.data[currentCellRow - 1][currentCellCol];
+      double down = sharedData->currentPlate.data[currentCellRow + 1][currentCellCol];
+      double cell = sharedData->currentPlate.data[currentCellRow][currentCellCol];
+
+
+      printf("Thread %zu working on cell %zu, %zu\n", get_thread_number(privateData), currentCellRow, currentCellCol);
+      printf("Job data duration %f\n", jobData.duration);
+      printf("Job data thermal diffusivity %f\n", jobData.thermalDiffusivity);
+      printf("Job data plate cell dimmensions %f\n", jobData.plateCellDimmensions);
+      printf("Left %f\n", left);
+      printf("Right %f\n", right);
+      printf("Up %f\n", up);
+      printf("Down %f\n", down);
+      printf("Cell %f\n", cell);
+
+      double newTemperature = cell + ((jobData.duration * jobData
+      .thermalDiffusivity) / (jobData.plateCellDimmensions *
+        jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
+
+      printf("Thread %zu new temperature %f\n \n", get_thread_number(privateData), newTemperature);
+
+
+      sharedData->newPlate.data[currentCellRow][currentCellCol] = newTemperature;
+      if ((newTemperature - cell) > jobData.balancePoint) {
+        sharedData->newPlate.isBalanced = 0;
+      }
+      // printPlate(sharedData->newPlate);
+
+      cellNumber += get_thread_count(privateData);
+  }
+    }
+
+  return NULL;
+  
 }
 
 void copyPlateBorders(Plate original, Plate copy) {

@@ -63,9 +63,11 @@ typedef struct {
     size_t threadCount;  /// < number of threads
     Plate currentPlate;  /// < current plate
     Plate newPlate;  /// < new plate
+    JobData jobData;  /// < job data
 } SharedData;
 
 typedef struct {
     SharedData* sharedData;  /// < pointer to shared data
+    size_t threadNumber;  /// < thread number
 } PrivateData;
 

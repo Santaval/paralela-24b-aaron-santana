@@ -7,7 +7,7 @@
 void printPlate(Plate plate) {
   for (size_t i = 0; i < plate.rows; i++) {
     for (size_t j = 0; j < plate.cols; j++) {
-      printf("%lf ", plate.data[i][j]);
+      printf("%.1lf ", plate.data[i][j]);
     }
     printf("\n");
   }
