@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <time.h>
 #include "input.h"
 #include "solution.h"
@@ -45,11 +46,14 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   Plate currentPlate = plate;
   size_t iterationsCount = 0;
   do {
+    //printf("Iteration %zu\n", iterationsCount);
+      // initial time 
     if (iterationsCount > 0) {
       destroyPlate(previousPlate);
     }
     previousPlate = currentPlate;
     currentPlate = simulationIteration(jobData, previousPlate);
+    
     iterationsCount++;
   } while (!currentPlate.isBalanced);
 
@@ -62,81 +66,94 @@ SimulationResult simulate(JobData jobData, Plate plate) {
 }
 
 Plate simulationIteration(JobData jobData, Plate plate) {
+
+
+
   Plate newPlate;
   newPlate.rows = plate.rows;
   newPlate.cols = plate.cols;
   newPlate.isBalanced = 1;
+
 
   // Allocate memory for the new plate
   newPlate.data = (double **)malloc(plate.rows * sizeof(double *));
   for (size_t i = 0; i < plate.rows; i++) {
     newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
   }
-  copyPlateBorders(plate, newPlate);
-
-  const size_t STATIC_THREAD_COUNT = 100;
+ 
+  const size_t STATIC_THREAD_COUNT = 10000;
 
 
 
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->currentPlate = plate;
   sharedData->newPlate = newPlate;
-  sharedData->threadCount = STATIC_THREAD_COUNT;
+  sharedData->threadCount = STATIC_THREAD_COUNT > plate.rows * plate.cols ? plate.rows * plate.cols : STATIC_THREAD_COUNT;
   sharedData->jobData = jobData;
 
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
+  // time_t startTime = time(NULL);
 
+  struct thread_team* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
 
-  struct thread_team* team = create_threads(STATIC_THREAD_COUNT, calcNewTemperature, sharedData);
-  join_threads(team);
+  //  // final time
+  // time_t endTime = time(NULL);
+  // // print time in milliseconds
+  // printf("Time: %f\n", difftime(endTime, startTime));
+  // copyPlateBorders(plate, newPlate);
+  // join_threads(team);
   
   pthread_mutex_destroy(&sharedData->can_accsess_isBalanced);
-  // printPlate(plate);
   Plate resultPlate = sharedData->newPlate;
   free(sharedData);
+
+
 
   return resultPlate;
 }
 
 void* calcNewTemperature(void* privateData) {
-  SharedData* sharedData = (SharedData*) get_shared_data(privateData);
+  SharedData* sharedData = (SharedData*)get_shared_data(privateData);
   size_t cellNumber = get_thread_number(privateData);
+  size_t totalCells = sharedData->currentPlate.rows * sharedData->currentPlate.cols;
+  size_t threadCount = get_thread_count(privateData);
 
   JobData jobData = sharedData->jobData;
+  double factor = (jobData.duration * jobData.thermalDiffusivity) / 
+                  (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
 
-  while (cellNumber < sharedData->currentPlate.rows * sharedData->currentPlate.cols - 1) {
-    size_t currentCellRow = cellNumber / sharedData->currentPlate.cols;
-    size_t currentCellCol = cellNumber % sharedData->currentPlate.cols;
+  while (cellNumber < totalCells) {
+    size_t row = cellNumber / sharedData->currentPlate.cols;
+    size_t col = cellNumber % sharedData->currentPlate.cols;
 
-    if (currentCellRow == 0 || currentCellRow == sharedData->currentPlate.rows - 1
-        || currentCellCol == 0 || currentCellCol == sharedData->currentPlate.cols - 1) {
-      cellNumber += sharedData->threadCount;
-    } else {
-      //printPlate(sharedData->newPlate);
-      double left = sharedData->currentPlate.data[currentCellRow][currentCellCol - 1];
-      double right = sharedData->currentPlate.data[currentCellRow][currentCellCol + 1];
-      double up = sharedData->currentPlate.data[currentCellRow - 1][currentCellCol];
-      double down = sharedData->currentPlate.data[currentCellRow + 1][currentCellCol];
-      double cell = sharedData->currentPlate.data[currentCellRow][currentCellCol];
-
-      double newTemperature = cell + ((jobData.duration * jobData
-      .thermalDiffusivity) / (jobData.plateCellDimmensions *
-        jobData.plateCellDimmensions)) * (left + right + up + down - 4 * cell);
-
-      sharedData->newPlate.data[currentCellRow][currentCellCol] = newTemperature;
-      if ((newTemperature - cell) > jobData.balancePoint) {
-        pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
-        sharedData->newPlate.isBalanced = 0;
-        pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
-      }
-
-      cellNumber += get_thread_count(privateData);
-  }
+    // Saltar bordes
+    if (row == 0 || row == sharedData->currentPlate.rows - 1 ||
+        col == 0 || col == sharedData->currentPlate.cols - 1) {
+      cellNumber += threadCount;
+      continue;
     }
 
+    double left = sharedData->currentPlate.data[row][col - 1];
+    double right = sharedData->currentPlate.data[row][col + 1];
+    double up = sharedData->currentPlate.data[row - 1][col];
+    double down = sharedData->currentPlate.data[row + 1][col];
+    double cell = sharedData->currentPlate.data[row][col];
+
+    double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+    sharedData->newPlate.data[row][col] = newTemperature;
+
+    pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
+    if (fabs(newTemperature - cell) > jobData.balancePoint) {
+      sharedData->newPlate.isBalanced = 0;
+    }
+    pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
+
+    cellNumber += threadCount;
+  }
+
   return NULL;
-  
 }
+
 
 void copyPlateBorders(Plate original, Plate copy) {
   // top
