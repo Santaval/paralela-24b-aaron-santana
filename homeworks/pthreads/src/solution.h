@@ -87,3 +87,7 @@ void destroyPlate(Plate plate);
  * @param resultsCount The number of SimulationResult objects in the array.
  */
 void destroySimulationResult(SimulationResult* results, size_t resultsCount);
+
+
+struct private_data* create_threads(size_t thread_count, void* (*routine)(void* data), void* data);
+int join_threads(const size_t thread_count, struct private_data* team);

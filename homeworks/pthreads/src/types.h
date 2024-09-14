@@ -68,8 +68,11 @@ typedef struct {
     pthread_mutex_t can_accsess_isBalanced;  /// < mutex for accessing isBalanced
 } SharedData;
 
-typedef struct {
-    SharedData* sharedData;  /// < pointer to shared data
-    size_t threadNumber;  /// < thread number
-} PrivateData;
+// thread_private_data_t
+struct private_data {
+  size_t thread_number;  // rank
+  size_t thread_count;
+  void* data;
+ pthread_t thread_id;
+};
 

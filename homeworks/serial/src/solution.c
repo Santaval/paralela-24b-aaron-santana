@@ -1,10 +1,13 @@
 // Copyright <2024> <Aaron Santana Valdelomar - UCR>
+#define _POSIX_C_SOURCE 199309L
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "input.h"
 #include "solution.h"
 #include "output.h"
@@ -16,13 +19,14 @@
  * @return Status code to the operating system, 0 means success.
  */
 int main(int argc, char** argv) {
+  struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
   Arguments args = processArguments(argc, argv);
   JobData* jobsData = readJobData(args.jobFile);
   size_t jobsCount = calcFileLinesCount(args.jobFile);
   SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
   assert(results != NULL);
   // print jpbs count
-  printf("JC=%zu\n", jobsCount);
   for (size_t i = 0; i < jobsCount; i++) {
     results[i] = processJob(jobsData[i]);
   }
@@ -32,6 +36,10 @@ int main(int argc, char** argv) {
   // free memory
   destroyJobsData(jobsData, jobsCount);
   destroySimulationResult(results, jobsCount);
+
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec - start.tv_nsec) / 1e6;
+  printf("Elapsed time: %.2f ms\n", elapsedTime);
   return EXIT_SUCCESS;
 }
 
