@@ -20,8 +20,6 @@
  * @return Status code to the operating system, 0 means success.
  */
 int main(int argc, char** argv) {
-  struct timespec start, end;
-  clock_gettime(CLOCK_MONOTONIC, &start);
   Arguments args = processArguments(argc, argv);
   JobData* jobsData = readJobData(args.jobFile);
   size_t jobsCount = calcFileLinesCount(args.jobFile);
@@ -37,9 +35,6 @@ int main(int argc, char** argv) {
   destroyJobsData(jobsData, jobsCount);
   destroySimulationResult(results, jobsCount);
 
-  clock_gettime(CLOCK_MONOTONIC, &end);
-  double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec - start.tv_nsec) / 1e6;
-  printf("Elapsed time: %.2f ms\n", elapsedTime);
   return EXIT_SUCCESS;
 }
 
@@ -51,17 +46,31 @@ SimulationResult processJob(JobData jobData) {
 
 SimulationResult simulate(JobData jobData, Plate plate) {
   Plate previousPlate = plate;
-  Plate currentPlate = plate;
+  printPlate(previousPlate);
+  Plate currentPlate;
+  currentPlate.rows = previousPlate.rows;
+  currentPlate.cols = previousPlate.cols;
+  currentPlate.isBalanced = 0;
+  currentPlate.data = malloc(currentPlate.rows * sizeof(double*));
+  for (size_t i = 0; i < currentPlate.rows; i++) {
+    currentPlate.data[i] = malloc(currentPlate.cols * sizeof(double));
+  }
+
+
+  copyPlateBorders(previousPlate, currentPlate);
+  printPlate(currentPlate);
+
   size_t iterationsCount = 0;
   do {
-    if (iterationsCount > 0) {
-      destroyPlate(previousPlate);
-    }
+    printf("Iteration %zu\n", iterationsCount);
+    // if (iterationsCount > 0) {
+    //   destroyPlate(previousPlate);
+    // }
     previousPlate = currentPlate;
     currentPlate = simulationIteration(jobData, previousPlate);
     
     iterationsCount++;
-  } while (!currentPlate.isBalanced);
+  } while (currentPlate.isBalanced);
 
   // free memory
   destroyPlate(previousPlate);
@@ -72,20 +81,20 @@ SimulationResult simulate(JobData jobData, Plate plate) {
 }
 
 Plate simulationIteration(JobData jobData, Plate plate) {
+
   Plate newPlate;
   newPlate.rows = plate.rows;
   newPlate.cols = plate.cols;
   newPlate.isBalanced = 1;
-
-  // Allocate memory for the new plate
-  newPlate.data = (double **)malloc(plate.rows * sizeof(double *));
-  for (size_t i = 0; i < plate.rows; i++) {
-    newPlate.data[i] = (double *)malloc(plate.cols * sizeof(double));
+  newPlate.data = malloc(newPlate.rows * sizeof(double*));
+  for (size_t i = 0; i < newPlate.rows; i++) {
+    newPlate.data[i] = malloc(newPlate.cols * sizeof(double));
   }
- 
-  const size_t STATIC_THREAD_COUNT = 20;
 
   copyPlateBorders(plate, newPlate);
+
+  const size_t STATIC_THREAD_COUNT = 10;
+
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->currentPlate = plate;
   sharedData->newPlate = newPlate;
@@ -93,11 +102,12 @@ Plate simulationIteration(JobData jobData, Plate plate) {
   sharedData->jobData = jobData;
 
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
-
- struct private_data* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
+  // start time 
+  struct private_data* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
 
 
   join_threads(sharedData->threadCount, team);
+
   
   pthread_mutex_destroy(&sharedData->can_accsess_isBalanced);
   Plate resultPlate = sharedData->newPlate;
@@ -131,7 +141,6 @@ void* calcNewTemperature(void* data) {
     while (cellNumber < totalCells) {
         size_t row = cellNumber / cols;
         size_t col = cellNumber % cols;
-        printf("Thread %zu: Processing cell (%zu, %zu)\n", privateData->thread_number, row, col);
         if (row > 0 && row < rows - 1 && col > 0 && col < cols - 1) {
             double left = currentPlateData[row][col - 1];
             double right = currentPlateData[row][col + 1];
@@ -156,10 +165,6 @@ void* calcNewTemperature(void* data) {
         sharedData->newPlate.isBalanced = 0;
         pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
     }
-
-   
-
-
     return NULL;
 }
 
@@ -260,13 +265,13 @@ struct private_data* create_threads(size_t thread_count, void* (*routine)(void* 
 
 int join_threads(const size_t thread_count, struct private_data* team) {
   int result = EXIT_SUCCESS;
-  for (size_t thread_number = 0; thread_number < thread_count
-        ; ++thread_number) {
-      int error = pthread_join(team[thread_number].thread_id, NULL);
-      if (result == EXIT_SUCCESS) {
-       result = error;
-      }
+for (size_t thread_number = 0; thread_number < thread_count; ++thread_number) {
+    int error = pthread_join(team[thread_number].thread_id, NULL);
+    if (result == EXIT_SUCCESS) {
+        result = error;
     }
+}
+
     free(team);
     return result;
 }
