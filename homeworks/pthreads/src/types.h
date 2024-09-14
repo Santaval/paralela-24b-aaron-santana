@@ -49,7 +49,7 @@ typedef struct {
  * This structure contains a 2D array representing a plate and the number of iterations performed in the simulation.
  */
 typedef struct {
-    Plate plate;  /// < plate resulting from the simulation
+    Plate* plate;  /// < plate resulting from the simulation
     size_t iterations;  /// < number of iterations performed in the simulation
 } SimulationResult;
 
@@ -62,8 +62,8 @@ typedef struct {
  */
 typedef struct {
     size_t threadCount;  /// < number of threads
-    Plate currentPlate;  /// < current plate
-    Plate newPlate;  /// < new plate
+    Plate* readPlate;  /// < current plate
+    Plate* writePlate;  /// < new plate
     JobData jobData;  /// < job data
     pthread_mutex_t can_accsess_isBalanced;  /// < mutex for accessing isBalanced
 } SharedData;

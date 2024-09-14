@@ -23,7 +23,17 @@ SimulationResult processJob(JobData jobData);
  * @param plate The plate on which the simulation will be performed.
  * @return The result of the simulation.
  */
-SimulationResult simulate(JobData jobData, Plate plate);
+SimulationResult simulate(JobData jobData, Plate* plate);
+
+/**
+ * @brief Creates a copy of a Plate object.
+ *
+ * This function creates a deep copy of the given Plate object and returns a pointer to the newly created copy.
+ *
+ * @param plate The Plate object to be copied.
+ * @return A pointer to the newly created copy of the Plate object.
+ */
+Plate* copyPlate(Plate* plate);
 
 /**
  * @brief Copies the borders of the original plate to the copy plate.
@@ -43,7 +53,7 @@ void copyPlateBorders(Plate original, Plate copy);
  * @param plate The plate object representing the current state of the simulation.
  * @return The updated plate object after the simulation iteration.
  */
-Plate simulationIteration(JobData JobData, Plate plate);
+void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate);
 
 /**
  * Calculates the new temperature for a specific cell in the plate.
@@ -76,7 +86,7 @@ void destroyJobsData(JobData *jobsData, size_t jobsCount);
  *
  * @param plate The Plate object to be destroyed.
  */
-void destroyPlate(Plate plate);
+void destroyPlate(Plate* plate);
 /**
  * @brief Destroys the SimulationResult objects and frees the memory allocated for them.
  *

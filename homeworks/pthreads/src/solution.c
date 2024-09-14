@@ -20,6 +20,8 @@
  * @return Status code to the operating system, 0 means success.
  */
 int main(int argc, char** argv) {
+    struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
   Arguments args = processArguments(argc, argv);
   JobData* jobsData = readJobData(args.jobFile);
   size_t jobsCount = calcFileLinesCount(args.jobFile);
@@ -35,87 +37,59 @@ int main(int argc, char** argv) {
   destroyJobsData(jobsData, jobsCount);
   destroySimulationResult(results, jobsCount);
 
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec - start.tv_nsec) / 1e6;
+  printf("Elapsed time: %.2f ms\n", elapsedTime);
+
   return EXIT_SUCCESS;
 }
 
 SimulationResult processJob(JobData jobData) {
-  Plate plate = readPlate(jobData.plateFile, jobData.directory);
+  Plate* plate = readPlate(jobData.plateFile, jobData.directory);
   SimulationResult result = simulate(jobData, plate);
   return result;
 }
 
-SimulationResult simulate(JobData jobData, Plate plate) {
-  Plate previousPlate = plate;
-  printPlate(previousPlate);
-  Plate currentPlate;
-  currentPlate.rows = previousPlate.rows;
-  currentPlate.cols = previousPlate.cols;
-  currentPlate.isBalanced = 0;
-  currentPlate.data = malloc(currentPlate.rows * sizeof(double*));
-  for (size_t i = 0; i < currentPlate.rows; i++) {
-    currentPlate.data[i] = malloc(currentPlate.cols * sizeof(double));
-  }
-
-
-  copyPlateBorders(previousPlate, currentPlate);
-  printPlate(currentPlate);
+SimulationResult simulate(JobData jobData, Plate* plate) {
+  Plate* readPlate = copyPlate(plate);
+  Plate* writePlate = plate;
+  writePlate->isBalanced = 0;
 
   size_t iterationsCount = 0;
-  do {
+  
+  while (!writePlate->isBalanced) 
+  {
     printf("Iteration %zu\n", iterationsCount);
-    // if (iterationsCount > 0) {
-    //   destroyPlate(previousPlate);
-    // }
-    previousPlate = currentPlate;
-    currentPlate = simulationIteration(jobData, previousPlate);
-    
+    Plate* temp = readPlate;
+    readPlate = writePlate;
+    writePlate = temp;
+    simulationIteration(jobData, readPlate, writePlate);
     iterationsCount++;
-  } while (currentPlate.isBalanced);
+  }
+  
 
-  // free memory
-  destroyPlate(previousPlate);
   SimulationResult result;
-  result.plate = currentPlate;
+  result.plate = writePlate;
   result.iterations = iterationsCount;
   return result;
 }
 
-Plate simulationIteration(JobData jobData, Plate plate) {
-
-  Plate newPlate;
-  newPlate.rows = plate.rows;
-  newPlate.cols = plate.cols;
-  newPlate.isBalanced = 1;
-  newPlate.data = malloc(newPlate.rows * sizeof(double*));
-  for (size_t i = 0; i < newPlate.rows; i++) {
-    newPlate.data[i] = malloc(newPlate.cols * sizeof(double));
-  }
-
-  copyPlateBorders(plate, newPlate);
-
-  const size_t STATIC_THREAD_COUNT = 10;
+void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate) {
+  writePlate->isBalanced = 1;
+ 
+  const size_t STATIC_THREAD_COUNT = sysconf(_SC_NPROCESSORS_ONLN);
 
   SharedData* sharedData = malloc(sizeof(SharedData));
-  sharedData->currentPlate = plate;
-  sharedData->newPlate = newPlate;
-  sharedData->threadCount = STATIC_THREAD_COUNT > plate.rows * plate.cols ? plate.rows * plate.cols : STATIC_THREAD_COUNT;
+  sharedData->readPlate = readPlate;
+  sharedData->writePlate = writePlate;
+  sharedData->threadCount = STATIC_THREAD_COUNT > readPlate -> rows * readPlate -> cols ? readPlate->rows * readPlate->cols : STATIC_THREAD_COUNT;
   sharedData->jobData = jobData;
 
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
-  // start time 
   struct private_data* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
-
-
   join_threads(sharedData->threadCount, team);
-
-  
   pthread_mutex_destroy(&sharedData->can_accsess_isBalanced);
-  Plate resultPlate = sharedData->newPlate;
   free(sharedData);
-
-
-
-  return resultPlate;
 }
 
 void* calcNewTemperature(void* data) {
@@ -123,7 +97,7 @@ void* calcNewTemperature(void* data) {
     size_t cellNumber = privateData->thread_number;
     SharedData* sharedData = (SharedData*) privateData->data;
 
-    size_t totalCells = sharedData->currentPlate.rows * sharedData->currentPlate.cols;
+    size_t totalCells = sharedData->readPlate->rows * sharedData->readPlate->cols;
     size_t threadCount = privateData->thread_count;
     size_t cellsProcessed = 0;
 
@@ -133,14 +107,15 @@ void* calcNewTemperature(void* data) {
     
     int localIsBalanced = 1;
     
-    double** currentPlateData = sharedData->currentPlate.data;
-    double** newPlateData = sharedData->newPlate.data;
-    size_t rows = sharedData->currentPlate.rows;
-    size_t cols = sharedData->currentPlate.cols;
+    double** currentPlateData = sharedData->readPlate->data;
+    double** newPlateData = sharedData->writePlate->data;
+    size_t rows = sharedData->readPlate->rows;
+    size_t cols = sharedData->readPlate->cols;
 
     while (cellNumber < totalCells) {
         size_t row = cellNumber / cols;
-        size_t col = cellNumber % cols;
+        size_t col = cellNumber - (cellNumber / cols) * cols;
+
         if (row > 0 && row < rows - 1 && col > 0 && col < cols - 1) {
             double left = currentPlateData[row][col - 1];
             double right = currentPlateData[row][col + 1];
@@ -162,13 +137,24 @@ void* calcNewTemperature(void* data) {
 
     if (!localIsBalanced) {
         pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
-        sharedData->newPlate.isBalanced = 0;
+        sharedData->writePlate->isBalanced = 0;
         pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
     }
     return NULL;
 }
 
-
+Plate* copyPlate(Plate* plate) {
+  Plate* newPlate = malloc(sizeof(Plate));
+  newPlate->rows = plate->rows;
+  newPlate->cols = plate->cols;
+  newPlate->isBalanced = plate->isBalanced;
+  newPlate->data = malloc(newPlate->rows * sizeof(double*));
+  for (size_t i = 0; i < newPlate->rows; i++) {
+    newPlate->data[i] = malloc(newPlate->cols * sizeof(double));
+    memcpy(newPlate->data[i], plate->data[i], newPlate->cols * sizeof(double));
+  }
+  return newPlate;
+}
 
 void copyPlateBorders(Plate original, Plate copy) {
   // top
@@ -223,11 +209,11 @@ void destroyJobsData(JobData *jobsData, size_t jobsCount) {
     free(jobsData);
 }
 
-void destroyPlate(Plate plate) {
-  for (size_t i = 0; i < plate.rows; i++) {
-    free(plate.data[i]);
+void destroyPlate(Plate* plate) {
+  for (size_t i = 0; i < plate->rows; i++) {
+    free(plate->data[i]);
   }
-  free(plate.data);
+  free(plate->data);
 }
 
 void destroySimulationResult(SimulationResult* results, size_t resultsCount) {
