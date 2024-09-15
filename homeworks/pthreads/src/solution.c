@@ -38,7 +38,8 @@ int main(int argc, char** argv) {
   destroySimulationResult(results, jobsCount);
 
   clock_gettime(CLOCK_MONOTONIC, &end);
-  double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec - start.tv_nsec) / 1e6;
+  double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec -
+    start.tv_nsec) / 1e6;
   printf("Elapsed time: %.2f ms\n", elapsedTime);
 
   return EXIT_SUCCESS;
@@ -56,9 +57,7 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   writePlate->isBalanced = 0;
 
   size_t iterationsCount = 0;
-  
-  while (!writePlate->isBalanced) 
-  {
+  while (!writePlate->isBalanced) {
     printf("Iteration %zu\n", iterationsCount);
     Plate* temp = readPlate;
     readPlate = writePlate;
@@ -66,8 +65,6 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
     simulationIteration(jobData, readPlate, writePlate, args);
     iterationsCount++;
   }
-  
-
   SimulationResult result;
   result.plate = writePlate;
   result.iterations = iterationsCount;
@@ -80,18 +77,19 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
 void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
     Arguments args) {
   writePlate->isBalanced = 1;
- 
   const size_t totalCells = readPlate->rows * readPlate->cols;
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->readPlate = readPlate;
   sharedData->writePlate = writePlate;
-  sharedData->threadCount = args.threadsCount > totalCells ? totalCells : args.threadsCount;
+  sharedData->threadCount = args.threadsCount > totalCells ? totalCells
+    : args.threadsCount;
   sharedData->jobData = jobData;
   // printf("Thread count: %zu\n", sharedData->threadCount);
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
 
 
-  struct private_data* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
+  struct private_data* team = create_threads(sharedData->threadCount,
+    calcNewTemperature, sharedData);
   join_threads(sharedData->threadCount, team);
 
 
@@ -104,16 +102,16 @@ void* calcNewTemperature(void* data) {
     size_t cellNumber = privateData->thread_number;
     SharedData* sharedData = (SharedData*) privateData->data;
 
-    size_t totalCells = sharedData->readPlate->rows * sharedData->readPlate->cols;
+    size_t totalCells = sharedData->readPlate->rows *
+      sharedData->readPlate->cols;
     size_t threadCount = privateData->thread_count;
     size_t cellsProcessed = 0;
 
     JobData jobData = sharedData->jobData;
-    double factor = (jobData.duration * jobData.thermalDiffusivity) / 
-                    (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
-    
+    double factor = (jobData.duration * jobData.thermalDiffusivity) /
+                    (jobData.plateCellDimmensions *
+                      jobData.plateCellDimmensions);
     int localIsBalanced = 1;
-    
     double** currentPlateData = sharedData->readPlate->data;
     double** newPlateData = sharedData->writePlate->data;
     size_t rows = sharedData->readPlate->rows;
@@ -130,7 +128,8 @@ void* calcNewTemperature(void* data) {
             double down = currentPlateData[row + 1][col];
             double cell = currentPlateData[row][col];
 
-            double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+            double newTemperature = cell + factor * (left + right + up +
+              down - 4 * cell);
             newPlateData[row][col] = newTemperature;
 
             if (fabs(newTemperature - cell) > jobData.balancePoint) {
@@ -228,12 +227,11 @@ void destroySimulationResult(SimulationResult* results, size_t resultsCount) {
     for (size_t i = 0; i < resultsCount; i++) {
         destroyPlate(results[i].plate);
     }
-
-    
     free(results);
 }
 
-struct private_data* create_threads(size_t thread_count, void* (*routine)(void* data), void* data) {
+struct private_data* create_threads(size_t thread_count,
+  void* (*routine)(void* data), void* data) {
   // for thread_number := 0 to thread_count do
   struct private_data* team = (struct private_data*)
     calloc(thread_count, sizeof(struct private_data));
@@ -261,7 +259,8 @@ struct private_data* create_threads(size_t thread_count, void* (*routine)(void* 
 
 int join_threads(const size_t thread_count, struct private_data* team) {
   int result = EXIT_SUCCESS;
-  for (size_t thread_number = 0; thread_number < thread_count; ++thread_number) {
+  for (size_t thread_number = 0; thread_number < thread_count;
+    ++thread_number) {
       int error = pthread_join(team[thread_number].thread_id, NULL);
       if (result == EXIT_SUCCESS) {
           result = error;

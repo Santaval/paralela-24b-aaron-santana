@@ -100,5 +100,26 @@ void destroyPlate(Plate* plate);
 void destroySimulationResult(SimulationResult* results, size_t resultsCount);
 
 
-struct private_data* create_threads(size_t thread_count, void* (*routine)(void* data), void* data);
+/**
+ * @brief Creates multiple threads and assigns a routine to each thread.
+ *
+ * This function creates a specified number of threads and assigns a routine to each thread.
+ * The routine is responsible for executing a specific task using the provided data.
+ *
+ * @param thread_count The number of threads to create.
+ * @param routine The routine function to be executed by each thread.
+ * @param data The data to be passed to each thread's routine function.
+ * @return A pointer to the private data structure containing information about the created threads.
+ */
+struct private_data* create_threads(size_t thread_count,
+    void* (*routine)(void* data), void* data);
+/**
+ * @brief Joins a specified number of threads and releases the resources associated with them.
+ *
+ * This function joins a specified number of threads and releases the resources associated with them.
+ *
+ * @param thread_count The number of threads to join.
+ * @param team The private data structure for the team of threads.
+ * @return Returns an integer indicating the success or failure of the operation.
+ */
 int join_threads(const size_t thread_count, struct private_data* team);

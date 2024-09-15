@@ -10,7 +10,7 @@
 
 typedef struct  {
     double** data;  /// < matrix of doubles representing the plate
-    short isBalanced; /// < 1 if the plate is balanced, 0 otherwise
+    short isBalanced;  /// < indicates if the plate is balanced
     size_t rows;  /// < number of rows in the plate
     size_t cols;  /// < number of columns in the plate
 } Plate;
@@ -65,7 +65,7 @@ typedef struct {
     Plate* readPlate;  /// < current plate
     Plate* writePlate;  /// < new plate
     JobData jobData;  /// < job data
-    pthread_mutex_t can_accsess_isBalanced;  /// < mutex for accessing isBalanced
+    pthread_mutex_t can_accsess_isBalanced;  /// < mutex for isBalanced
 } SharedData;
 
 // thread_private_data_t
@@ -73,6 +73,6 @@ struct private_data {
   size_t thread_number;  // rank
   size_t thread_count;
   void* data;
- pthread_t thread_id;
+  pthread_t thread_id;
 };
 

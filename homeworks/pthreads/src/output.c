@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include "types.h"
 #include "output.h"
+#define MAX_PATH_SIZE 100
 
 void printPlate(Plate plate) {
   for (size_t i = 0; i < plate.rows; i++) {
@@ -46,7 +47,8 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
   char* jobNumbers = malloc(100 * sizeof(char));
   char* path = malloc(100 * sizeof(char));
   extractNumbers(jobsData[0].plateFile, jobNumbers);
-  sprintf(path, "%s/job%s.tsv", jobsData[0].directory, jobNumbers);
+  snprintf(path, MAX_PATH_SIZE, "%s/job%s.tsv", jobsData[0].directory,
+    jobNumbers);
   printf("Writing results to %s\n", path);
   file = fopen(path, "w");
 
@@ -60,8 +62,9 @@ void writeJobsResult(JobData* jobsData, SimulationResult* results,
     // TO-DO print plate in binary file
     char* binaryFilepath = malloc(100 * sizeof(char));
     removeExtension(jobsData[i].plateFile);
-    sprintf(binaryFilepath, "%s/%s-%zu.bin", jobsData[i].directory,
-      jobsData[i].plateFile, results[i].iterations);
+    snprintf(binaryFilepath, MAX_PATH_SIZE, "%s/%s-%zu.bin",
+    jobsData[i].directory, jobsData[i].plateFile, results[i].iterations);
+
 
     printf("Writing plate to %s\n", binaryFilepath);
     writePlate(results[i].plate, binaryFilepath);

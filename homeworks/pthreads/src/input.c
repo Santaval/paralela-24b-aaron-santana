@@ -19,7 +19,6 @@ Arguments processArguments(int argc, char **argv) {
 
   // assign the arguments to the struct
   args.jobFile = argv[1];
-  
   if (sscanf(argv[2], "%zu", &args.threadsCount) != 1) {
     args.threadsCount = sysconf(_SC_NPROCESSORS_ONLN);
   }
@@ -85,7 +84,7 @@ Plate* readPlate(const char *binaryFilepath, char *directory) {
   size_t rows, cols;
   double **matrix;
   char path[MAX_PATH_SIZE];
-  sprintf(path, "%s/%s", directory, binaryFilepath);
+  snprintf(path, MAX_PATH_SIZE, "%s/%s", directory, binaryFilepath);
   binaryFile = fopen(path, "rb");
 
   if (!binaryFile) {
