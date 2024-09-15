@@ -36,7 +36,7 @@ run_tests:
 	@echo "Ejecutando bin/serial sobre cada archivo .txt..."
 	@find $(DEST_DIR) -type f -name '*.txt' | while read -r file; do \
 		echo "Ejecutando bin/serial sobre $$file..."; \
-		bin/pthreads $$file 16; \
+		bin/pthreads $$file 1 $$ARGS; \
 		icdiff $${file%.txt}.tsv $${file%.txt}.out || echo "Diferencias encontradas en $$file"; \
 	done
 	$(MAKE)   # Ejecuta la comparación después de cada ejecución
