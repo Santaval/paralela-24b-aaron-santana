@@ -9,19 +9,47 @@
 #define MAX_PATH_SIZE 100
 
 Arguments processArguments(int argc, char **argv) {
-  const int AGUMENTS_COUNT = 3;  // 3 arguments are expected
+  const int MIN_ARGUMENTS_COUNT = 3;  // 3 arguments are expected
+
   Arguments args;
-  // Check if the number of arguments is correct
-  if (argc != AGUMENTS_COUNT) {
+
+  if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
+      fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
+      fprintf(stderr, "jobFile: path to the file containing the job data\n");
+      fprintf(stderr, "threadsCount: number of threads to be used\n");
+      fprintf(stderr, "FLAGS:\n");
+      fprintf(stderr, "-h, --help: show this help message\n");
+      fprintf(stderr, "-v, --verbose: show verbose output\n");
+      fprintf(stderr, "-i, --iterations: show the number of iterations counted in the simulation\n");
+      exit(EXIT_SUCCESS);
+  } else if (argc >= MIN_ARGUMENTS_COUNT ) {
+     // assign the arguments to the struct
+    args.jobFile = argv[1];
+    if (sscanf(argv[2], "%zu", &args.threadsCount) != 1) {
+      args.threadsCount = sysconf(_SC_NPROCESSORS_ONLN);
+    }
+
+    if (argc > MIN_ARGUMENTS_COUNT) {
+      for (int i = MIN_ARGUMENTS_COUNT; i < argc; i++) {
+        if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
+          args.isVerbose = 1;
+        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iterations") == 0) {
+          args.shloudPrintIterations = 1;
+        }
+      }
+    } else {
+      args.isVerbose = 0;
+      args.shloudPrintIterations = 0;
+    }
+    
+  } else {
     fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
+    fprintf(stderr, "jobFile: path to the file containing the job data\n");
+    fprintf(stderr, "threadsCount: number of threads to be used\n");
     exit(EXIT_FAILURE);
   }
 
-  // assign the arguments to the struct
-  args.jobFile = argv[1];
-  if (sscanf(argv[2], "%zu", &args.threadsCount) != 1) {
-    args.threadsCount = sysconf(_SC_NPROCESSORS_ONLN);
-  }
+ 
 
   return args;
 }

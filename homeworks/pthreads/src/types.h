@@ -24,6 +24,9 @@ typedef struct  {
 typedef struct {
     char* jobFile;  /// < path to the job file
     size_t threadsCount;  /// < number of threads to be used
+    short isVerbose;  /// < indicates if the program should print verbose output
+    short shloudPrintIterations;  /// < indicates if the program should print the 
+        /// number of iterations counted in the simulation
 } Arguments;
 
 /**
