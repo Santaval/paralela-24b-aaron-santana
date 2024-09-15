@@ -34,6 +34,7 @@ size_t calcFileLinesCount(const char* filePath);
  * Reads a matrix from a binary file that represents a plate.
  *
  * @param binaryFilpath The filepath of the binary file.
+ * @param directory The directory where the binary file is located.
  * @return A double pointer to the matrix read from the file.
  */
 Plate* readPlate(const char* binaryFilpath, char* directory);

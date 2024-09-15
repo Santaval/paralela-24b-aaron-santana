@@ -12,6 +12,7 @@
  * It returns a `SimulationResult` object that represents the result of the job processing.
  *
  * @param jobData The job data to be processed.
+ * @param args The arguments for the simulation.
  * @return The result of the job processing.
  */
 SimulationResult processJob(JobData jobData, Arguments args);
@@ -21,6 +22,7 @@ SimulationResult processJob(JobData jobData, Arguments args);
  *
  * @param jobData The job data to be simulated.
  * @param plate The plate on which the simulation will be performed.
+ * @param args The arguments for the simulation.
  * @return The result of the simulation.
  */
 SimulationResult simulate(JobData jobData, Plate* plate, Arguments args);
@@ -46,24 +48,24 @@ Plate* copyPlate(Plate* plate);
  */
 void copyPlateBorders(Plate original, Plate copy);
 
+
 /**
- * Simulates a single iteration of the plate simulation.
+ * Perform a simulation iteration using the given job data, read plate, write plate, and arguments.
  *
- * @param JobData The job data containing the necessary information for the simulation.
- * @param plate The plate object representing the current state of the simulation.
- * @return The updated plate object after the simulation iteration.
+ * @param jobData The job data for the simulation iteration.
+ * @param readPlate The plate to read data from.
+ * @param writePlate The plate to write data to.
+ * @param args The arguments for the simulation iteration.
  */
 void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
     Arguments args);
 
+
 /**
- * Calculates the new temperature for a specific cell in the plate.
+ * Calculates the new temperature based on the given data.
  *
- * @param currentPlate The current state of the plate.
- * @param newPlate The new state of the plate.
- * @param jobData The data for the current job.
- * @param currentCellRow The row index of the current cell.
- * @param currentCellCol The column index of the current cell.
+ * @param data The data needed to calculate the new temperature.
+ * @return A pointer to the calculated new temperature.
  */
 void* calcNewTemperature(void* data);
 
