@@ -12,6 +12,8 @@ Arguments processArguments(int argc, char **argv) {
   const int MIN_ARGUMENTS_COUNT = 3;  // 3 arguments are expected
 
   Arguments args;
+  args.isVerbose = 0;
+  args.shloudPrintIterations = 0;
 
   if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
       fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
@@ -21,7 +23,7 @@ Arguments processArguments(int argc, char **argv) {
       fprintf(stderr, "-h, --help: show this help message\n");
       fprintf(stderr, "-v, --verbose: show verbose output\n");
       fprintf(stderr, "-i, --iterations: show the number of iterations counted in the simulation\n");
-      exit(EXIT_SUCCESS);
+
   } else if (argc >= MIN_ARGUMENTS_COUNT ) {
      // assign the arguments to the struct
     args.jobFile = argv[1];
@@ -37,9 +39,8 @@ Arguments processArguments(int argc, char **argv) {
           args.shloudPrintIterations = 1;
         }
       }
-    } else {
-      args.isVerbose = 0;
-      args.shloudPrintIterations = 0;
+      printf("Verbose: %d\n", args.isVerbose);
+      printf("Print iterations: %d\n", args.shloudPrintIterations);
     }
     
   } else {

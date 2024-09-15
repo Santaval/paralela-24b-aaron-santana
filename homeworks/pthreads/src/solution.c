@@ -58,11 +58,16 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
 
   size_t iterationsCount = 0;
   while (!writePlate->isBalanced) {
-    printf("Iteration %zu\n", iterationsCount);
+    if (args.shloudPrintIterations) {
+      printf("Iteration %zu\n", iterationsCount);
+    }
     Plate* temp = readPlate;
     readPlate = writePlate;
     writePlate = temp;
     simulationIteration(jobData, readPlate, writePlate, args);
+    if (args.isVerbose) {
+      printPlate(*writePlate);
+    }
     iterationsCount++;
   }
   SimulationResult result;
