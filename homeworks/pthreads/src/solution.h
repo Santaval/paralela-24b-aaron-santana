@@ -14,7 +14,7 @@
  * @param jobData The job data to be processed.
  * @return The result of the job processing.
  */
-SimulationResult processJob(JobData jobData);
+SimulationResult processJob(JobData jobData, Arguments args);
 
 /**
  * Simulates the given job data on the specified plate.
@@ -23,7 +23,7 @@ SimulationResult processJob(JobData jobData);
  * @param plate The plate on which the simulation will be performed.
  * @return The result of the simulation.
  */
-SimulationResult simulate(JobData jobData, Plate* plate);
+SimulationResult simulate(JobData jobData, Plate* plate, Arguments args);
 
 /**
  * @brief Creates a copy of a Plate object.
@@ -53,7 +53,8 @@ void copyPlateBorders(Plate original, Plate copy);
  * @param plate The plate object representing the current state of the simulation.
  * @return The updated plate object after the simulation iteration.
  */
-void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate);
+void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
+    Arguments args);
 
 /**
  * Calculates the new temperature for a specific cell in the plate.

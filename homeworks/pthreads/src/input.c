@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "types.h"
 
 #define MAX_PATH_SIZE 100
@@ -18,7 +19,11 @@ Arguments processArguments(int argc, char **argv) {
 
   // assign the arguments to the struct
   args.jobFile = argv[1];
-  args.threadsCount = atoi(argv[2]);
+  
+  if (sscanf(argv[2], "%zu", &args.threadsCount) != 1) {
+    args.threadsCount = sysconf(_SC_NPROCESSORS_ONLN);
+  }
+
   return args;
 }
 

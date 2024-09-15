@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
   assert(results != NULL);
   for (size_t i = 0; i < jobsCount; i++) {
-    results[i] = processJob(jobsData[i]);
+    results[i] = processJob(jobsData[i], args);
   }
 
   writeJobsResult(jobsData, results, jobsCount, "output.txt");
@@ -44,13 +44,13 @@ int main(int argc, char** argv) {
   return EXIT_SUCCESS;
 }
 
-SimulationResult processJob(JobData jobData) {
+SimulationResult processJob(JobData jobData, Arguments args) {
   Plate* plate = readPlate(jobData.plateFile, jobData.directory);
-  SimulationResult result = simulate(jobData, plate);
+  SimulationResult result = simulate(jobData, plate, args);
   return result;
 }
 
-SimulationResult simulate(JobData jobData, Plate* plate) {
+SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   Plate* readPlate = copyPlate(plate);
   Plate* writePlate = plate;
   writePlate->isBalanced = 0;
@@ -63,7 +63,7 @@ SimulationResult simulate(JobData jobData, Plate* plate) {
     Plate* temp = readPlate;
     readPlate = writePlate;
     writePlate = temp;
-    simulationIteration(jobData, readPlate, writePlate);
+    simulationIteration(jobData, readPlate, writePlate, args);
     iterationsCount++;
   }
   
@@ -77,15 +77,15 @@ SimulationResult simulate(JobData jobData, Plate* plate) {
   return result;
 }
 
-void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate) {
+void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
+    Arguments args) {
   writePlate->isBalanced = 1;
  
-  const size_t STATIC_THREAD_COUNT = sysconf(_SC_NPROCESSORS_ONLN);
-
+  const size_t totalCells = readPlate->rows * readPlate->cols;
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->readPlate = readPlate;
   sharedData->writePlate = writePlate;
-  sharedData->threadCount = STATIC_THREAD_COUNT > readPlate -> rows * readPlate -> cols ? readPlate->rows * readPlate->cols : STATIC_THREAD_COUNT;
+  sharedData->threadCount = args.threadsCount > totalCells ? totalCells : args.threadsCount;
   sharedData->jobData = jobData;
   // printf("Thread count: %zu\n", sharedData->threadCount);
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
