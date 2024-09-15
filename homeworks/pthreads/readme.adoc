@@ -65,7 +65,8 @@ El reporte incluye el número de estados 𝑘 y el tiempo en formato `YYYY/MM/DD
 
 El archivo de lámina es binario, con los primeros 8 bytes indicando la cantidad de filas 𝑅, los siguientes 8 bytes indicando las columnas 𝐶, seguidos por 𝑅⋅𝐶 valores flotantes que representan las temperaturas iniciales de cada celda. La simulación usa los valores en little-endian y actualiza la matriz hasta el punto de equilibrio.
 
-
+=== Diseño concurrente
+EL programa deberá recibir la cantidad de hilos de ejecución y dividir el trabajo de tal manera que cada hilo tenga una carga de trabajo similar. Esta solución deberá ser implementada utilizando la librería pthreads.
 [[design]]
 == Design of solution
 image::images/solution.svg[width=700]
