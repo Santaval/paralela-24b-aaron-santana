@@ -71,6 +71,9 @@ SimulationResult simulate(JobData jobData, Plate* plate) {
   SimulationResult result;
   result.plate = writePlate;
   result.iterations = iterationsCount;
+
+  // free memory
+  destroyPlate(readPlate);
   return result;
 }
 
@@ -84,10 +87,14 @@ void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate) {
   sharedData->writePlate = writePlate;
   sharedData->threadCount = STATIC_THREAD_COUNT > readPlate -> rows * readPlate -> cols ? readPlate->rows * readPlate->cols : STATIC_THREAD_COUNT;
   sharedData->jobData = jobData;
-
+  // printf("Thread count: %zu\n", sharedData->threadCount);
   pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
+
+
   struct private_data* team = create_threads(sharedData->threadCount, calcNewTemperature, sharedData);
   join_threads(sharedData->threadCount, team);
+
+
   pthread_mutex_destroy(&sharedData->can_accsess_isBalanced);
   free(sharedData);
 }
@@ -214,12 +221,15 @@ void destroyPlate(Plate* plate) {
     free(plate->data[i]);
   }
   free(plate->data);
+  free(plate);
 }
 
 void destroySimulationResult(SimulationResult* results, size_t resultsCount) {
     for (size_t i = 0; i < resultsCount; i++) {
         destroyPlate(results[i].plate);
     }
+
+    
     free(results);
 }
 
@@ -251,13 +261,13 @@ struct private_data* create_threads(size_t thread_count, void* (*routine)(void* 
 
 int join_threads(const size_t thread_count, struct private_data* team) {
   int result = EXIT_SUCCESS;
-for (size_t thread_number = 0; thread_number < thread_count; ++thread_number) {
-    int error = pthread_join(team[thread_number].thread_id, NULL);
-    if (result == EXIT_SUCCESS) {
-        result = error;
-    }
-}
+  for (size_t thread_number = 0; thread_number < thread_count; ++thread_number) {
+      int error = pthread_join(team[thread_number].thread_id, NULL);
+      if (result == EXIT_SUCCESS) {
+          result = error;
+      }
+  }
 
-    free(team);
-    return result;
+  free(team);
+  return result;
 }
