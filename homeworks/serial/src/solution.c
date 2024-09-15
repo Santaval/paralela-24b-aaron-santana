@@ -55,6 +55,7 @@ SimulationResult simulate(JobData jobData, Plate plate) {
   size_t iterationsCount = 0;
 
   do {
+    printf("Iteration %zu\n", iterationsCount);
     if (iterationsCount > 0) {
       destroyPlate(previousPlate);
     }
