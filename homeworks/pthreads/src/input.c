@@ -15,16 +15,18 @@ Arguments processArguments(int argc, char **argv) {
   args.isVerbose = 0;
   args.shloudPrintIterations = 0;
 
-  if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
+  if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
+    strcmp(argv[1], "--help") == 0)) {
       fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
       fprintf(stderr, "jobFile: path to the file containing the job data\n");
       fprintf(stderr, "threadsCount: number of threads to be used\n");
       fprintf(stderr, "FLAGS:\n");
       fprintf(stderr, "-h, --help: show this help message\n");
       fprintf(stderr, "-v, --verbose: show verbose output\n");
-      fprintf(stderr, "-i, --iterations: show the number of iterations counted in the simulation\n");
+      fprintf(stderr,
+        "-i, --iterations: show current iteration (k) number\n");
 
-  } else if (argc >= MIN_ARGUMENTS_COUNT ) {
+  } else if ( argc >= MIN_ARGUMENTS_COUNT ) {
      // assign the arguments to the struct
     args.jobFile = argv[1];
     if (sscanf(argv[2], "%zu", &args.threadsCount) != 1) {
@@ -35,23 +37,20 @@ Arguments processArguments(int argc, char **argv) {
       for (int i = MIN_ARGUMENTS_COUNT; i < argc; i++) {
         if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
           args.isVerbose = 1;
-        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iterations") == 0) {
+        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i],
+          "--iterations") == 0) {
           args.shloudPrintIterations = 1;
         }
       }
       printf("Verbose: %d\n", args.isVerbose);
       printf("Print iterations: %d\n", args.shloudPrintIterations);
     }
-    
   } else {
     fprintf(stderr, "Usage: %s <jobFile> <threadsCount>\n", argv[0]);
     fprintf(stderr, "jobFile: path to the file containing the job data\n");
     fprintf(stderr, "threadsCount: number of threads to be used\n");
     exit(EXIT_FAILURE);
   }
-
- 
-
   return args;
 }
 
