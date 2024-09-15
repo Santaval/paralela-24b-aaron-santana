@@ -71,28 +71,53 @@ procedure simulate(plate, duration, thermalDiffusivity, plateCellDimmensions, ba
 }
 
 procedure iterarion(plate, duration, thermalDiffusivity, plateDimmensions) {
-    const rows :=  rows(plate);
-    const cols :=  cols(plate);
-    const newPlate := copy(plate);
+    shared newPlate := newMatrix(rows(plate), cols(plate));
+    shared plate := plate;
+    shared duration := duration;
+    shared thermalDiffusivity := thermalDiffusivity;
+    shared plateDimmensions := plateDimmensions;
 
-    // row + 1 and col + 1 to ignore the borders    
-    for rowIndex := 0 to rows + 1 do
-        for colIndex := 0 to cols + 1 do
-           newPlate[rowIndex][colIndex] := calculateNewTemperature(plate, rowIndex, colIndex, duration, thermalDiffusivity, plateDimmensions);
-        end
-    end 
+    // create threads
+    declare team := createThreads(calculateNewTemperature, threadsCount);
+    joinThreads(team);
+
+
 }
 
-procedure calculateNewTemperature(plate, rowIndex, colIndex, duration, thermalDiffusivity, plateDimmensions) {
-    const cell := plate[rowIndex][colIndex]; // get the current cell temperature
-    const left := plate[rowIndex][colIndex - 1]; // get the left cell temperature
-    const right := plate[rowIndex][colIndex + 1]; // get the right cell temperature
-    const up := plate[rowIndex - 1][colIndex]; // get the up cell temperature
-    const down := plate[rowIndex + 1][colIndex]; // get the down cell temperature
 
-    // apply formula
-    const newTemperature := cell + ((duration * thermalDiffusivity) / (plateDimmensions * plateDimmensions)) * (left + right + up + down - 4 * cell);
-    return newTemperature;
+procedure calculateNewTemperature() {
+    declare factor := (duration * thermalDiffusivity) / (plateDimmensions * plateDimmensions);
+    declare localIsBalanced := 1;
+    declare rows := rows(plate);
+    declare cols := cols(plate);
+    declare cellsProcessed := 0;
+    declare totalCells := rows * cols;
+    declare threadCount := threadsCount;
+    declare currentPlateData := plate;
+    declare newPlateData := newPlate;
+
+    while (cellNumber < totalCells) {
+        declare row := cellNumber / cols;
+        declare col := cellNumber - (cellNumber / cols) * cols;
+
+        if (row > 0 && row < rows - 1 && col > 0 && col < cols - 1) {
+            declare left := currentPlateData[row][col - 1];
+            declare right := currentPlateData[row][col + 1];
+            declare up := currentPlateData[row - 1][col];
+            declare down := currentPlateData[row + 1][col];
+            declare cell := currentPlateData[row][col];
+
+            declare newTemperature := cell + factor * (left + right + up + down - 4 * cell);
+            newPlateData[row][col] := newTemperature;
+
+            if (fabs(newTemperature - cell) > balancePoint) {
+                localIsBalanced := 0;  // Se detecta que no está balanceado
+            }
+        }
+
+        cellNumber += threadCount;
+        cellsProcessed++;
+    }
 }
 
 procedure isPlateBalanced(actualPlate, previousPlate, balancePoint) {
