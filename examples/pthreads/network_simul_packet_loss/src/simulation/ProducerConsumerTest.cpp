@@ -39,7 +39,7 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
 
   // Create objects for the simulation
   this->producer = new ProducerTest(this->packageCount, this->productorDelay
-    , this->consumerCount + 1);
+    , this->consumerCount);
   this->dispatcher = new DispatcherTest(this->dispatcherDelay);
   this->dispatcher->createOwnQueue();
   // Create each producer
@@ -55,14 +55,14 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
 
   // Communicate simulation objects
   // Producer push network messages to the dispatcher queue
-  this->producer->setProducingQueue(this->dispatcher->getConsumingQueue());
+  this->producer->setProducingQueue(this->assembler->getConsumingQueue());
   // Dispatcher delivers to each consumer, and they should be registered
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->dispatcher->registerRedirect(index + 1
       , this->consumers[index]->getConsumingQueue());
   }
-  this->dispatcher->registerRedirect(this->consumerCount + 1,
-      this->assembler->getConsumingQueue());
+  // this->dispatcher->registerRedirect(this->consumerCount + 1,
+      // this->assembler->getConsumingQueue());
   this->assembler->setProducingQueue(this->dispatcher->getConsumingQueue());
 
   // Start the simulation
