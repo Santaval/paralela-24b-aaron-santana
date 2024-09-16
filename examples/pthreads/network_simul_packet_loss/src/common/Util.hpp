@@ -21,6 +21,8 @@ class Util {
  public:  // Random number generation
   /// Generates a pseudo-random integer number in range [min, max[
   static int random(int min, int max);
+  /// Generates a pseudo-random double number in range [min, max[
+  static double random(double min, double max);
 
  public:  // Concurrency
   /**

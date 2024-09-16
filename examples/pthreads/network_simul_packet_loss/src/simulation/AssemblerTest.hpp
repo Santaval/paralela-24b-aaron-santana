@@ -9,24 +9,27 @@
 #include "NetworkMessage.hpp"
 
 /**
- * @brief A ConsumerTest class example
+ * @brief An Assembler class example
  */
 class AssemblerTest : public Assembler<NetworkMessage, NetworkMessage> {
   DISABLE_COPY(AssemblerTest);
 
  protected:
   /// Delay of consumer to consume a package, negative for max random
-  int packageLossPercent = 0;
-  /// Number of messages received
-  size_t ConsumerCount = 0;
+  double packageLossPercent = 0.0;
+  /// Number of target consumers
+  size_t consumerCount = 0;
+  /// Number of messages lost
+  size_t packageLossCount = 0;
 
  public:
   /// Constructor
-  explicit AssemblerTest(double packageLossPercent, size_t consumerCount);
+  explicit AssemblerTest(const double packageLossPercent,
+      const size_t consumerCount);
   /// Consume the messages in its own execution thread
   int run() override;
   /// Override this method to process any data extracted from the queue
   void consume(NetworkMessage data) override;
 };
 
-#endif  // CONSUMERTEST_HPP
+#endif  // ASSEMBLERTEST_HPP

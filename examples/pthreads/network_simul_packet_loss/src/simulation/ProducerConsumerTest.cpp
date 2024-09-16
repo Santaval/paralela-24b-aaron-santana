@@ -5,8 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "AssemblerTest.hpp"
 #include "ProducerConsumerTest.hpp"
+#include "AssemblerTest.hpp"
 #include "ConsumerTest.hpp"
 #include "DispatcherTest.hpp"
 #include "ProducerTest.hpp"
@@ -19,7 +19,7 @@ const char* const usage =
   "  prod_delay  delay of producer to create a package\n"
   "  disp_delay  delay of dispatcher to dispatch a package\n"
   "  cons_delay  delay of consumer to consume a package\n"
-  "  loss_perc  percent of package loss (0-100)\n"
+  "  loss_perc   percent of package loss (0-100)\n"
   "\n"
   "Delays are in millisenconds, negatives are maximums for random delays\n";
 
@@ -28,6 +28,7 @@ ProducerConsumerTest::~ProducerConsumerTest() {
   delete this->dispatcher;
   for ( ConsumerTest* consumer : this->consumers )
     delete consumer;
+  delete this->assembler;
 }
 
 int ProducerConsumerTest::start(int argc, char* argv[]) {
@@ -48,9 +49,10 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
     assert(this->consumers[index]);
     this->consumers[index]->createOwnQueue();
   }
-
-  this->assembler = new AssemblerTest(this->packageLossPercentage, this->consumerCount);
+  this->assembler = new AssemblerTest(this->packageLossPercent,
+      this->consumerCount);
   this->assembler->createOwnQueue();
+
   // Communicate simulation objects
   // Producer push network messages to the dispatcher queue
   this->producer->setProducingQueue(this->dispatcher->getConsumingQueue());
@@ -59,8 +61,8 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
     this->dispatcher->registerRedirect(index + 1
       , this->consumers[index]->getConsumingQueue());
   }
-
-  this->dispatcher->registerRedirect(this->consumerCount + 1, this->assembler->getConsumingQueue());
+  this->dispatcher->registerRedirect(this->consumerCount + 1,
+      this->assembler->getConsumingQueue());
   this->assembler->setProducingQueue(this->dispatcher->getConsumingQueue());
 
   // Start the simulation
@@ -69,6 +71,7 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->consumers[index]->startThread();
   }
+  this->assembler->startThread();
 
   // Wait for objets to finish the simulation
   this->producer->waitToFinish();
@@ -76,7 +79,6 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->consumers[index]->waitToFinish();
   }
-
   this->assembler->waitToFinish();
 
   // Simulation finished
@@ -96,7 +98,7 @@ int ProducerConsumerTest::analyzeArguments(int argc, char* argv[]) {
   this->productorDelay = std::atoi(argv[index++]);
   this->dispatcherDelay = std::atoi(argv[index++]);
   this->consumerDelay = std::atoi(argv[index++]);
-  this->packageLossPercentage = std::atof(argv[index++]);
+  this->packageLossPercent = std::atof(argv[index++]);
 
   // todo: Validate that given arguments are fine
   return EXIT_SUCCESS;

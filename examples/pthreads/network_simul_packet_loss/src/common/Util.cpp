@@ -1,6 +1,7 @@
 // Copyright 2021 Jeisson Hidalgo-Cespedes. Universidad de Costa Rica. CC BY 4.0
 
 #include <chrono>
+#include <mutex>
 #include <random>
 #include <thread>
 
@@ -10,12 +11,27 @@
 static std::random_device::result_type seed = std::random_device()();
 // This object generates randon numbers using the Mersenne-Twister algoritym
 static std::mt19937 randomEngine(seed);
+// Protects the random engine to be thread-safe
+static std::mutex canAccessRandomEngine;
 
 int Util::random(int min, int max) {
   // Produce random values with uniform discrete distribution
   std::uniform_int_distribution<int> randomDistribution(min, max - 1);
   // Generate and return a random number using the uniform distribution
-  return randomDistribution(randomEngine);
+  canAccessRandomEngine.lock();
+  const int result = randomDistribution(randomEngine);
+  canAccessRandomEngine.unlock();
+  return result;
+}
+
+double Util::random(double min, double max) {
+  // Produce random values with uniform discrete distribution
+  std::uniform_real_distribution<double> randomDistribution(min, max);
+  // Generate and return a random number using the uniform distribution
+  canAccessRandomEngine.lock();
+  const double result = randomDistribution(randomEngine);
+  canAccessRandomEngine.unlock();
+  return result;
 }
 
 void Util::sleepFor(int milliseconds) {
