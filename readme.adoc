@@ -29,11 +29,11 @@
 
 14) Semáforo: Es una variable que se usa para controlar el acceso a un recurso compartido. Los semáforos pueden ser binarios o contadores.
 
-15) Barrera:
+15) Barrera: Es una técnica que se usa para sincronizar los hilos de ejecución. Se utiliza para que los hilos de ejecución esperen a que todos los demás hilos de ejecución terminen de ejecutarse.
 
-16) Variable de condición:
+16) Variable de condición: Es una variable que se usa para que un hilo de ejecución espere a que otro hilo de ejecución termine de ejecutarse.
 
-17) Candado de lectura y escritura:
+17) Candado de lectura y escritura: Es una técnica que se usa para evitar que dos o más hilos de ejecución accedan a un recurso compartido al mismo tiempo. Los candados de lectura y escritura permiten que varios hilos de ejecución lean un recurso compartido al mismo tiempo, pero solo un hilo de ejecución puede escribir en el recurso compartido.
 
 18) Descomposición:
 
