@@ -21,6 +21,7 @@ const char* const usage =
   "  disp_delay  delay of dispatcher to dispatch a package\n"
   "  cons_delay  delay of consumer to consume a package\n"
   "  loss_perc   percent of package loss (0-100)\n"
+  "   queue_cap   capacity of the queues\n"
   "\n"
   "Delays are in millisenconds, negatives are maximums for random delays\n";
 
@@ -58,17 +59,17 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   }
 
   this->dispatcher = new DispatcherTest(this->dispatcherDelay);
-  this->dispatcher->createOwnQueue();
+  this->dispatcher->createOwnQueue(this->queueCapacity);
   // Create each producer
   this->consumers.resize(this->consumerCount);
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->consumers[index] = new ConsumerTest(this->consumerDelay);
     assert(this->consumers[index]);
-    this->consumers[index]->createOwnQueue();
+    this->consumers[index]->createOwnQueue(this->queueCapacity);
   }
   this->assembler = new AssemblerTest(this->packageLossPercent,
       this->consumerCount);
-  this->assembler->createOwnQueue();
+  this->assembler->createOwnQueue(this->queueCapacity);
 
   // Communicate simulation objects
   // Producer push network messages to the dispatcher queue
@@ -116,7 +117,7 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
 
 int ProducerConsumerTest::analyzeArguments(int argc, char* argv[]) {
   // 5 + 1 arguments are mandatory
-  if ( argc != 8 ) {
+  if ( argc < 8 ) {
     std::cout << usage;
     return EXIT_FAILURE;
   }
@@ -129,6 +130,13 @@ int ProducerConsumerTest::analyzeArguments(int argc, char* argv[]) {
   this->dispatcherDelay = std::atoi(argv[index++]);
   this->consumerDelay = std::atoi(argv[index++]);
   this->packageLossPercent = std::atof(argv[index++]);
+  
+
+  if ( argc > 8 ) {
+    this->queueCapacity = std::strtoul(argv[index++], nullptr, 10);
+  }
+
+
 
   // todo: Validate that given arguments are fine
   return EXIT_SUCCESS;
