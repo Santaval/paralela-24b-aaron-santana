@@ -35,11 +35,11 @@
 
 17) Candado de lectura y escritura: Es una técnica que se usa para evitar que dos o más hilos de ejecución accedan a un recurso compartido al mismo tiempo. Los candados de lectura y escritura permiten que varios hilos de ejecución lean un recurso compartido al mismo tiempo, pero solo un hilo de ejecución puede escribir en el recurso compartido.
 
-18) Descomposición:
+18) Descomposición: Es una técnica que se usa en programación paralela para dividir/distribuir las tareas y operarlas al mismo tiempo.
 
-19) Mapeo:
+19) Mapeo: Es una técnica que se usa en programación paralela para asignar las tareas a los hilos de ejecución de manera eficiente, es decir, que cada hilo de ejecución tenga una carga de trabajo equitativa.
 
-20) Incremento de velocidad:
+20) Incremento de velocidad: Es una técnica que se usa en programación paralela para mejorar el rendimiento de un programa, es decir, que las tareas se ejecuten más rápido. Esto se logra mediante la aplicación de los principios descritos anteriormente.
 
 21) Comunicación punto a punto entre procesos:
 
