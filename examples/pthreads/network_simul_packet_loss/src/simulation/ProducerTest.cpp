@@ -6,31 +6,45 @@
 #include "Log.hpp"
 #include "Util.hpp"
 
-ProducerTest::ProducerTest(size_t packageCount, int productorDelay
-  , size_t consumerCount)
-  : packageCount(packageCount)
-  , productorDelay(productorDelay)
-  , consumerCount(consumerCount) {
+ProducerTest::ProducerTest(const size_t whoAmI, const size_t& packageCount, const int& productorDelay, const size_t& producerCount,
+  const size_t& consumerCount, size_t& createdPackages, std::mutex& canAccessCreatedPackages)
+  :whoAmI(whoAmI), packageCount(packageCount), productorDelay(productorDelay), producerCount(producerCount), consumerCount(consumerCount), createdPackages(createdPackages), canAccessCreatedPackages(canAccessCreatedPackages) {
 }
 
 int ProducerTest::run() {
   // Produce each asked message
-  for ( size_t index = 0; index < this->packageCount; ++index ) {
-    this->produce(this->createMessage(index));
+  size_t currentPackage = 0;
+  while (true) {
+    // Protect the access to the shared counter of created packages
+    this->canAccessCreatedPackages.lock();
+    // Check if we have produced all the messages
+    size_t currentPackage = ++this->createdPackages;
+    // Release the access to the shared counter of created packages
+    this->canAccessCreatedPackages.unlock();
+    if (currentPackage > this->packageCount) {
+      break;
+    }
+    // Create a message
+    NetworkMessage message = this->createMessage(currentPackage);
+    // Push the message to the queue
+    this->produce(message);
+    ++this->myPackageCount;
+    // Increment the counter of created packages
   }
-
-  // Produce an empty message to communicate we finished
-  this->produce(NetworkMessage());
-
+  
+  if (currentPackage == this->packageCount + this->producerCount) {
+    this->produce(NetworkMessage());
+  }
+  
   // Report production is done
-  Log::append(Log::INFO, "Producer", std::to_string(this->packageCount)
+  Log::append(Log::INFO, "Producer", std::to_string(this->myPackageCount)
     + " menssages sent");
   return EXIT_SUCCESS;
 }
 
 NetworkMessage ProducerTest::createMessage(size_t index) const {
   // Source is always 1: this producer
-  const uint16_t source = 1;
+  const uint16_t source = this->whoAmI + 1;
   // Target is selected by random
   const uint16_t target = 1 + Util::random(0
     , static_cast<int>(this->consumerCount));

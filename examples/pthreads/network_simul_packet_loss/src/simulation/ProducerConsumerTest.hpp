@@ -5,6 +5,7 @@
 #ifndef PRODUCERCONSUMERTEST_HPP
 #define PRODUCERCONSUMERTEST_HPP
 
+#include <mutex>
 #include <cstddef>
 #include <vector>
 
@@ -28,6 +29,8 @@ class ProducerConsumerTest {
   size_t packageCount = 0;
   /// Number of consumer threads
   size_t consumerCount = 0;
+  /// Number of producer threads
+  size_t producerCount = 0;
   /// Delay of producer to create a package, negative for max random
   int productorDelay = 0;
   /// Delay of dispatcher to dispatch a package, negative for max random
@@ -36,10 +39,14 @@ class ProducerConsumerTest {
   int consumerDelay = 0;
   /// Package loss percent
   double packageLossPercent = 0.0;
+  /// Shared counter of created packages currently created
+  size_t createdPackages ;
+  /// Protects the access to the shared counter of created packages
+  std::mutex canAccessCreatedPackages;
 
  private:
   /// Producer of the simulated network messages
-  ProducerTest* producer = nullptr;
+  std::vector<ProducerTest*> producers;
   /// A dispatcher of the of the simulated network messages
   DispatcherTest* dispatcher = nullptr;
   /// Consumers of the simulated network messages

@@ -5,6 +5,8 @@
 #ifndef PRODUCERTEST_HPP
 #define PRODUCERTEST_HPP
 
+#include <mutex>
+
 #include "NetworkMessage.hpp"
 #include "Producer.hpp"
 
@@ -16,16 +18,25 @@ class ProducerTest : public Producer<NetworkMessage> {
   DISABLE_COPY(ProducerTest);
 
  protected:
+  const size_t whoAmI;
   /// Number of packages to be produced
-  size_t packageCount = 0;
+  const size_t& packageCount;
   /// Delay of producer to create a package, negative for max random
-  int productorDelay = 0;
+  const int& productorDelay;
+  /// Number of producer threads
+  const size_t& producerCount;
   /// Number of consumer threads
-  size_t consumerCount = 0;
-
+  const size_t& consumerCount;
+  /// Shared counter of created packages currently created
+  size_t& createdPackages ;
+  /// Protects the access to the shared counter of created packages
+  std::mutex& canAccessCreatedPackages;
+  /// my own package count
+  size_t myPackageCount = 0;
  public:
   /// Constructor
-  ProducerTest(size_t packageCount, int productorDelay, size_t consumerCount);
+  ProducerTest(const size_t whoAmI, const size_t& packageCount, const int& productorDelay, const size_t& producerCount,
+  const size_t& consumerCount, size_t& createdPackages, std::mutex& canAccessCreatedPackages);
   /// Do the message production in its own execution thread
   int run() override;
   /// Creates a simulation message to be sent by the network
