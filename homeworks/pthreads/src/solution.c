@@ -95,51 +95,62 @@ void* calcNewTemperature(void* data) {
     const struct private_data* privateData = (struct private_data*)data;
     SharedData* sharedData = (SharedData*) privateData->data;
 
-    const size_t totalCells = sharedData->readPlate->rows *
-      sharedData->readPlate->cols;
     const size_t threadCount = privateData->thread_count;
 
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
-                    (jobData.plateCellDimmensions *
-                      jobData.plateCellDimmensions);
+                    (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
     const size_t rows = sharedData->readPlate->rows;
     const size_t cols = sharedData->readPlate->cols;
+
+    // Ajuste para manejar divisiones no exactas
+    size_t rowsPerThread = rows / threadCount;
+    size_t extraRows = rows % threadCount;  // Filas extra a distribuir entre los primeros hilos
+
+    size_t startRow, endRow;
+
+    if (privateData->thread_number < extraRows) {
+        // Los primeros 'extraRows' hilos procesan una fila extra
+        startRow = privateData->thread_number * (rowsPerThread + 1);
+        endRow = startRow + rowsPerThread + 1;
+    } else {
+        // Los hilos restantes procesan solo 'rowsPerThread' filas
+        startRow = privateData->thread_number * rowsPerThread + extraRows;
+        endRow = startRow + rowsPerThread;
+    }
 
     while(1) {
         double** currentPlateData = sharedData->readPlate->data;
         double** newPlateData = sharedData->writePlate->data;
         int localIsBalanced = 1;
-        size_t cellNumber = privateData->thread_number;
 
         if (sharedData->writePlate->isBalanced == 2) {
             break;
         }
 
         // --------------------------
-        while (cellNumber < totalCells) {
-            size_t row = cellNumber / cols;
-            size_t col = cellNumber - (row * cols);  // Simplificado
+        // Procesar las celdas en el rango de filas asignadas al hilo
+        for (size_t row = startRow; row < endRow; ++row) {
+            for (size_t col = 1; col < cols - 1; ++col) {
+                if (row > 0 && row < rows - 1) {
+                    double left = currentPlateData[row][col - 1];
+                    double right = currentPlateData[row][col + 1];
+                    double up = currentPlateData[row - 1][col];
+                    double down = currentPlateData[row + 1][col];
+                    double cell = currentPlateData[row][col];
 
-            if (row > 0 && row < rows - 1 && col > 0 && col < cols - 1) {
-                double left = currentPlateData[row][col - 1];
-                double right = currentPlateData[row][col + 1];
-                double up = currentPlateData[row - 1][col];
-                double down = currentPlateData[row + 1][col];
-                double cell = currentPlateData[row][col];
+                    double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+                    newPlateData[row][col] = newTemperature;
 
-                double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
-                newPlateData[row][col] = newTemperature;
-
-                if (fabs(newTemperature - cell) > jobData.balancePoint) {
-                    localIsBalanced = 0;  // No está balanceado
+                    if (fabs(newTemperature - cell) > jobData.balancePoint) {
+                        localIsBalanced = 0;  // No está balanceado
+                    }
                 }
             }
-            cellNumber += threadCount;
         }
         // ---------------------------------------
         pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
-          sharedData->writePlate->isBalanced = sharedData->writePlate->isBalanced && localIsBalanced;
+        sharedData->writePlate->isBalanced = sharedData->writePlate->isBalanced && localIsBalanced;
         pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
 
         // Esperar a que todos los hilos terminen
@@ -152,19 +163,17 @@ void* calcNewTemperature(void* data) {
               sharedData->writePlate->isBalanced = 2;
             } else {
               sharedData->writePlate->isBalanced = 1;
-            // swap plates
-            Plate* temp = sharedData->readPlate;
-            sharedData->readPlate = sharedData->writePlate;
-            sharedData->writePlate = temp;
-            sharedData->totalIterations++;
+              // swap plates
+              Plate* temp = sharedData->readPlate;
+              sharedData->readPlate = sharedData->writePlate;
+              sharedData->writePlate = temp;
+              sharedData->totalIterations++;
             }
             pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
         }
         pthread_mutex_unlock(&sharedData->barrierMutex);
         sem_wait(&sharedData->turnstile1); // Esperar a que todos los hilos lleguen
         sem_post(&sharedData->turnstile1); // Despertar a los demás hilos
-
-        // aquí se garantiza que todos los hilos terminaron
 
         pthread_mutex_lock(&sharedData->barrierMutex);
         if (--sharedData->barrierCount == 0) {
@@ -179,6 +188,7 @@ void* calcNewTemperature(void* data) {
 
     return NULL;
 }
+
 
 Plate* copyPlate(Plate* plate) {
   Plate* newPlate = malloc(sizeof(Plate));
