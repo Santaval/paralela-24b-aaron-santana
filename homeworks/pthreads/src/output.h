@@ -28,7 +28,7 @@ void writeJobResult(JobData jobData, SimulationResult result, FILE* file);
  *
  * @param plate The matrix to be printed.
  */
-void printPlate(Plate plate);
+void printPlate(Plate* plate);
 
 /**
  * Writes the contents of a Plate structure to a binary file.

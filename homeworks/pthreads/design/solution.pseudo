@@ -51,37 +51,25 @@ procedure readPlate(plateFile) {
 
 
 procedure simulate(plate, duration, thermalDiffusivity, plateCellDimmensions, balancePoint) {
-    declare previusPlate := copy(plate);
-    declare actualPlate := copy(plate);
-    declare iterarionCount := 0;
+    shaered declare previusPlate := copy(plate);
+    shared declare actualPlate := copy(plate);
+    shaered declare iterarionCount := 0;
+    declare team := createThreads(calculateNewTemperature, threadsCount);
 
-    // simulations itereation should run at least once, is necessary to check duration don't be 0.
-    do
-        previusPlate = actualPlate; // save the acutal plate to compare with the next one
-        // run the iteration
-        actualPlate = iterarion(plate, duration, thermalDiffusivity, plateCellDimmensions);
-        iterarionCount++;
-    end while (!isPlateBalanced(plate));
+
+    // // simulations itereation should run at least once, is necessary to check duration don't be 0.
+    // do
+    //     previusPlate = actualPlate; // save the acutal plate to compare with the next one
+    //     // run the iteration
+    //     actualPlate = iterarion(plate, duration, thermalDiffusivity, plateCellDimmensions);
+    //     iterarionCount++;
+    // end while (!isPlateBalanced(plate));
 
     // return the number of iterations and the final plate
     return {
         iterarionCount: iterarionCount,
         plate: actualPlate
     };
-}
-
-procedure iterarion(plate, duration, thermalDiffusivity, plateDimmensions) {
-    shared newPlate := newMatrix(rows(plate), cols(plate));
-    shared plate := plate;
-    shared duration := duration;
-    shared thermalDiffusivity := thermalDiffusivity;
-    shared plateDimmensions := plateDimmensions;
-
-    // create threads
-    declare team := createThreads(calculateNewTemperature, threadsCount);
-    joinThreads(team);
-
-
 }
 
 

@@ -1,5 +1,6 @@
 // Copyright <2024> <Aaron Santana Valdelomar - UCR>
 #pragma once
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -69,7 +70,12 @@ typedef struct {
     Plate* readPlate;  /// < current plate
     Plate* writePlate;  /// < new plate
     JobData jobData;  /// < job data
+    size_t totalIterations;  /// < total number of iterations
     pthread_mutex_t can_accsess_isBalanced;  /// < mutex for isBalanced
+    pthread_mutex_t barrierMutex;  /// < mutex for barrier
+    sem_t turnstile1;  /// < semaphore for barrier 1
+    sem_t turnstile2;  /// < semaphore for barrier 2
+    size_t barrierCount;  /// < number of threads that have reached the barrier
 } SharedData;
 
 // thread_private_data_t

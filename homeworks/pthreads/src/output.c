@@ -5,17 +5,17 @@
 #include "output.h"
 #define MAX_PATH_SIZE 100
 
-void printPlate(Plate plate) {
-  for (size_t i = 0; i < plate.rows; i++) {
-    for (size_t j = 0; j < plate.cols; j++) {
-      printf("%.1lf ", plate.data[i][j]);
+void printPlate(Plate* plate) {
+  for (size_t i = 0; i < plate->rows; i++) {
+    for (size_t j = 0; j < plate->cols; j++) {
+      printf("%.1lf ", plate->data[i][j]);
     }
     printf("\n");
   }
 
   printf("\n");
 
-  printf("Plate is balanced: %s\n", plate.isBalanced ? "true" : "false");
+  printf("Plate is balanced: %s\n", plate->isBalanced ? "true" : "false");
 }
 
 
