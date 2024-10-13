@@ -64,7 +64,7 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   sharedData->totalIterations = 0;
   sharedData->currentCell = 0;
 
-  // init concurrency controls 
+  // init concurrency controls
     pthread_mutex_init(&sharedData->can_accsess_isBalanced, NULL);
     pthread_mutex_init(&sharedData->barrierMutex, NULL);
     pthread_mutex_init(&sharedData->can_accsess_currentCell, NULL);
@@ -83,7 +83,6 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
     sem_destroy(&sharedData->turnstile1);
     sem_destroy(&sharedData->turnstile2);
 
-    
   SimulationResult result;
   result.plate = writePlate;
   result.iterations = sharedData->totalIterations + 1;
@@ -102,13 +101,15 @@ void* calcNewTemperature(void* data) {
 
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
-                    (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
+                    (jobData.plateCellDimmensions *
+                    jobData.plateCellDimmensions);
     const size_t rows = sharedData->readPlate->rows;
     const size_t cols = sharedData->readPlate->cols;
 
     // Ajuste para manejar divisiones no exactas
     size_t rowsPerThread = rows / threadCount;
-    size_t extraRows = rows % threadCount;  // Filas extra a distribuir entre los primeros hilos
+    // Filas extra a distribuir entre los primeros hilos
+    size_t extraRows = rows % threadCount;
 
     size_t startRow, endRow;
 
@@ -122,7 +123,7 @@ void* calcNewTemperature(void* data) {
         endRow = startRow + rowsPerThread;
     }
 
-    while(1) {
+    while (1) {
         double** currentPlateData = sharedData->readPlate->data;
         double** newPlateData = sharedData->writePlate->data;
         int localIsBalanced = 1;
@@ -145,8 +146,9 @@ void* calcNewTemperature(void* data) {
                     double down = currentPlateData[row + 1][col];
                     double cell = currentPlateData[row][col];
 
-                    double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
-                    newPlateData[row][col] = newTemperature;
+                    double newTemperature = cell + factor *
+                    (left + right  + up + down - 4 * cell);
+                      newPlateData[row][col] = newTemperature;
 
                     if (fabs(newTemperature - cell) > jobData.balancePoint) {
                         localIsBalanced = 0;  // No está balanceado
@@ -178,7 +180,8 @@ void* calcNewTemperature(void* data) {
                 double down = currentPlateData[row + 1][col];
                 double cell = currentPlateData[row][col];
 
-                double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+                double newTemperature = cell + factor * (left
+                + right + up + down - 4 * cell);
                 newPlateData[row][col] = newTemperature;
 
                 if (fabs(newTemperature - cell) > jobData.balancePoint) {
@@ -188,7 +191,8 @@ void* calcNewTemperature(void* data) {
         }
         #endif
         pthread_mutex_lock(&sharedData->can_accsess_isBalanced);
-        sharedData->writePlate->isBalanced = sharedData->writePlate->isBalanced && localIsBalanced;
+        sharedData->writePlate->isBalanced =
+          sharedData->writePlate->isBalanced && localIsBalanced;
         pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
 
         // Esperar a que todos los hilos terminen
@@ -211,8 +215,9 @@ void* calcNewTemperature(void* data) {
             pthread_mutex_unlock(&sharedData->can_accsess_isBalanced);
         }
         pthread_mutex_unlock(&sharedData->barrierMutex);
-        sem_wait(&sharedData->turnstile1); // Esperar a que todos los hilos lleguen
-        sem_post(&sharedData->turnstile1); // Despertar a los demás hilos
+        // Esperar a que todos los hilos lleguen
+        sem_wait(&sharedData->turnstile1);
+        sem_post(&sharedData->turnstile1);  // Despertar a los demás hilos
 
         pthread_mutex_lock(&sharedData->barrierMutex);
         if (--sharedData->barrierCount == 0) {
