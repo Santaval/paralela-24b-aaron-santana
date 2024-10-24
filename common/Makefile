@@ -18,7 +18,7 @@ LINTC=$(LINTF),-readability/casting
 LINTX=$(LINTF),-build/c++11,-runtime/references
 ARGS=#= Execution arguments, e.g: 'ARGS=100 "a text"'
 ARGSJR=-ea
-GITUSER="Aaron Santana Valdelomar"
+GITUSER=Aaron Santana Valdelomar
 GITEMAIL=aaron.santana@ucr.ac.cr
 GITTIME=10800#= Store git password in memory for this amount of seconds (default 3h)
 HOST=$(subst .local,,$(shell hostname))
