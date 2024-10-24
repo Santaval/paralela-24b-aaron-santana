@@ -1,4 +1,4 @@
-# Makefile v3.5.0 2023-Oct-23 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
+# Makefile v3.5.2 2024-Oct-18 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
 
 # VAR=value  ## Overrides a variable, e.g CC=mpicc DEFS=-DGUI. See helpvars
 CC=gcc#= C compiler
@@ -18,8 +18,8 @@ LINTC=$(LINTF),-readability/casting
 LINTX=$(LINTF),-build/c++11,-runtime/references
 ARGS=#= Execution arguments, e.g: 'ARGS=100 "a text"'
 ARGSJR=-ea
-GITUSER=$(shell getent passwd "$USER" | cut -d: -f5 | cut -d, -f1)#= Your full name e.g: "Ana Soto"
-GITEMAIL=
+GITUSER="Aaron Santana Valdelomar"
+GITEMAIL=aaron.santana@ucr.ac.cr
 GITTIME=10800#= Store git password in memory for this amount of seconds (default 3h)
 HOST=$(subst .local,,$(shell hostname))
 
@@ -155,7 +155,7 @@ test: SHELL:=/bin/bash
 test: $(TARGETS) $(TESTOUT)
 
 DIFF=icdiff --no-headers
-ifeq (, $(shell which $(firstword $(DIFF))))
+ifeq (, $(shell which $(firstword $(DIFF)) 2> /dev/null))
 	DIFF=diff
 endif # icdiff not installed, use diff
 
@@ -190,7 +190,7 @@ $(TESTS)/%.txt: | $$(@D)/.
 
 # project=L  ## Create files for languages L: c|cpp|java|py|design
 DOWN=wget -qO -
-ifeq (, $(shell which $(firstword $(DOWN))))
+ifeq (, $(shell which $(firstword $(DOWN)) 2> /dev/null))
 	DOWN=curl -s
 endif # wget not installed, try cURL
 
@@ -271,14 +271,14 @@ endif
 
 # Install dependencies for Debian or RedHat based distros (pacman pending)
 DEPS=clang valgrind doxygen pipx python3-gpg checkstyle
-INSTDEPS=sudo apt install build-essential openjdk-17-jdk
+INSTDEPS=sudo apt install build-essential openjdk-17-jdk cpplint icdiff
 PIP=pipx
-ifeq (, $(shell which apt))
-	INSTDEPS=sudo dnf groupinstall 'Development Tools' && sudo dnf install java-17-openjdk
+ifeq (, $(shell which apt 2> /dev/null))
+	INSTDEPS=sudo dnf groupinstall 'Development Tools' && sudo dnf install java-17-openjdk && $(PIP) install icdiff && $(PIP) install cpplint
 endif # not an apt-based distribution, use dnf
 
 instdeps:  ## Install needed packages on Debian/RedHat-based distributions
-	$(INSTDEPS) $(DEPS) && $(PIP) ensurepath && $(PIP) install icdiff && $(PIP) install cpplint
+	$(INSTDEPS) $(DEPS) && $(PIP) ensurepath
 
 update:  ## Update this Makefile to latest version"
 	$(DOWN) $(MAKSITE)/Makefile > $(MAKFILE)
