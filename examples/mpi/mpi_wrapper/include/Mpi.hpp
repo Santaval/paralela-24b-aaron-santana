@@ -13,6 +13,22 @@ class Mpi {
         int process_hostname_length = -1;
     
     public:
+        class Error : public std::runtime_error {
+            public:
+                Error(const std::string& message) : std::runtime_error(message) {}
+                Error(const std::string& message, const Mpi& mpi) : std::runtime_error(
+                    message + " on process " + std::to_string(mpi.getRank()) + " of " 
+                        + std::to_string(mpi.getProcessCount()) + " on " + mpi.getHostname() + ":" + message
+                ) {}
+                Error(const std::string& message, const Mpi& mpi, const int threadNumber) : std::runtime_error(
+                    message + " on process " + std::to_string(mpi.getRank()) + " of "
+                        + std::to_string(mpi.getProcessCount()) + " on " + mpi.getHostname() + " thread "
+                        + std::to_string(threadNumber) + ":" + message
+                ) {}
+
+        };
+    
+    public:
         Mpi(int& argc, char**& argv) {
             if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
                 throw std::runtime_error("Error initializing MPI");
@@ -21,13 +37,13 @@ class Mpi {
             char process_hostname[MPI_MAX_PROCESSOR_NAME] = { '\0' };
             
             if (MPI_Comm_rank(MPI_COMM_WORLD, &this->process_number) != MPI_SUCCESS) {
-                throw std::runtime_error("Error getting process number");
+                throw Error("Error getting process number");
             }
             if (MPI_Comm_size(MPI_COMM_WORLD, &this->process_count) != MPI_SUCCESS) {
-                throw std::runtime_error("Error getting process count");
+                throw Error("Error getting process count");
             }
             if (MPI_Get_processor_name(process_hostname, &this->process_hostname_length) != MPI_SUCCESS) {
-                throw std::runtime_error("Error getting process hostname");
+                throw Error("Error getting hostname");
             }
             this->hostname = process_hostname;
         }
