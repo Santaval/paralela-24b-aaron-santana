@@ -14,9 +14,17 @@ int calculate_finish(int rank, int end, int workers, int begin);
 int main(int argc, char* argv[]) {
   try {
     Mpi mpi(argc, argv);
+    int overall_start = -1;
+    int overall_finish = -1;
     if (argc == 3) {
-      const int overall_start = atoi(argv[1]);
-      const int overall_finish = atoi(argv[2]);
+      overall_start = atoi(argv[1]);
+      overall_finish = atoi(argv[2]);
+    } else {
+      std::cout << "Enter the start of the range: ";
+      std::cin >> overall_start;
+      std::cout << "Enter the finish of the range: ";
+      std::cin >> overall_finish;
+    }
 
       const int process_start = calculate_start(mpi.getRank(), overall_finish
         , mpi.getSize(), overall_start);
@@ -40,16 +48,12 @@ int main(int argc, char* argv[]) {
           }
           thread_finish = index + 1;
         }
-
         const int thread_size = thread_finish - thread_start;
         #pragma omp critical(can_print)
         std::cout << '\t' << mpi.getHostname() << ':' << mpi.getProcessNumber()
             << '.' << omp_get_thread_num() << ": range [" << thread_start << ", "
             << thread_finish << "[ size " << thread_size << std::endl;
       }
-    } else {
-      std::cerr << "usage: hybrid_distr_arg start finish" << std::endl;
-    }
   } catch (const std::exception& error) {
     std::cerr << "error: " << error.what() << std::endl;
   }
