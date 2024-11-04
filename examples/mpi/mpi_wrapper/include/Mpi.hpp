@@ -126,12 +126,13 @@ class Mpi {
  public:  // Receive
   /// Wait until it receives a scalar value from other process
   template <typename Type>
-  void receive(Type& value, const int fromProcess,
+  int receive(Type& value, const int fromProcess,
       const int tag = MPI_ANY_TAG) {
     if (MPI_Recv(&value, /*capacity*/ 1, Mpi::map(value), fromProcess, tag,
         MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
       throw Mpi::Error("could not receive value", *this);
     }
+    return 1;
   }
   /// Wait until it receives at most capacity values from another process
   /// Return effective count of elements read
@@ -151,17 +152,19 @@ class Mpi {
   }
   /// Wait until it receives at most capacity values from another process
   template <typename Type>
-  void receive(std::vector<Type>& values, const int capacity,
+  int receive(std::vector<Type>& values, const int capacity,
       const int fromProcess, const int tag = MPI_ANY_TAG) {
     values.resize(capacity);
     const int count = this->receive(values.data(), capacity, fromProcess, tag);
     values.resize(count);
+    return count;
   }
   /// Wait until it receives a text of at most length chars from another process
-  void receive(std::string& text, const int fromProcess,
+  int receive(std::string& text, const int fromProcess,
       const int capacity = DEFAULT_CAPACITY, const int tag = MPI_ANY_TAG) {
     std::vector<char> buffer(capacity, '\0');
     this->receive(buffer, capacity, fromProcess, tag);
     text = buffer.data();
+    return text.length();
   }
 };
