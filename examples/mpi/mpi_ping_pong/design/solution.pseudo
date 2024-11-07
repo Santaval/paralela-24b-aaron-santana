@@ -1,0 +1,26 @@
+procedure main(argc, argv[]) do
+    declare mpi := mpi(arc, argv);
+    if (mpi.size != 2) {
+        print ("Process number must be 2")
+        return
+    }
+    playPingPong(mpi)
+end procedure
+
+
+procedure playPingPong(mpi) do
+    
+    declare ball := 31;
+    while (true) {
+
+        if (not mpi.rank) do 
+            mpi.send(ball, 1)
+            mpi.receive(ball, 0)
+        end else do 
+            mpi.send(ball, 0)
+            mpi.receive(ball, 1)
+        end
+    }
+end
+
+
