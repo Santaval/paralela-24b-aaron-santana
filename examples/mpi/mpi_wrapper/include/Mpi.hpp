@@ -127,22 +127,24 @@ class Mpi {
   /// Wait until it receives a scalar value from other process
   template <typename Type>
   int receive(Type& value, const int fromProcess,
-      const int tag = MPI_ANY_TAG) {
-    if (MPI_Recv(&value, /*capacity*/ 1, Mpi::map(value), fromProcess, tag,
-        MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-      throw Mpi::Error("could not receive value", *this);
-    }
-    return 1;
+      const int tag = MPI_ANY_TAG, int* source = nullptr) {
+    return this->receive(&value, 1, fromProcess, tag, source);
   }
   /// Wait until it receives at most capacity values from another process
   /// Return effective count of elements read
   template <typename Type>
   int receive(Type* values, const int capacity, const int fromProcess,
-      const int tag = MPI_ANY_TAG) {
+      const int tag = MPI_ANY_TAG, int* source = nullptr) {
     MPI_Status status;
     if (MPI_Recv(values, capacity, Mpi::map(Type()), fromProcess, tag,
         MPI_COMM_WORLD, &status) != MPI_SUCCESS) {
       throw Mpi::Error("could not receive array", *this);
+    }
+    if (source) {
+      *source = status.MPI_SOURCE;
+      // if (MPI_Status_get_source(&status, source) != MPI_SUCCESS) {
+      //   throw Mpi::Error("could not get count", *this);
+      // }
     }
     int count = -1;
     if (MPI_Get_count(&status, Mpi::map(Type()), &count) != MPI_SUCCESS) {
@@ -153,17 +155,20 @@ class Mpi {
   /// Wait until it receives at most capacity values from another process
   template <typename Type>
   int receive(std::vector<Type>& values, const int capacity,
-      const int fromProcess, const int tag = MPI_ANY_TAG) {
+      const int fromProcess, const int tag = MPI_ANY_TAG,
+      int* source = nullptr) {
     values.resize(capacity);
-    const int count = this->receive(values.data(), capacity, fromProcess, tag);
+    const int count = this->receive(values.data(), capacity, fromProcess, tag,
+        source);
     values.resize(count);
     return count;
   }
   /// Wait until it receives a text of at most length chars from another process
   int receive(std::string& text, const int fromProcess,
-      const int capacity = DEFAULT_CAPACITY, const int tag = MPI_ANY_TAG) {
+      const int capacity = DEFAULT_CAPACITY, const int tag = MPI_ANY_TAG,
+      int* source = nullptr) {
     std::vector<char> buffer(capacity, '\0');
-    this->receive(buffer, capacity, fromProcess, tag);
+    this->receive(buffer, capacity, fromProcess, tag, source);
     text = buffer.data();
     return text.length();
   }
