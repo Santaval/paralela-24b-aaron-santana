@@ -1,4 +1,4 @@
-# Makefile v3.5.2 2024-Oct-18 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
+# Makefile v3.6.0 2024-Nov-07 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
 
 # VAR=value  ## Overrides a variable, e.g CC=mpicc DEFS=-DGUI. See helpvars
 CC=gcc#= C compiler
@@ -18,6 +18,8 @@ LINTC=$(LINTF),-readability/casting
 LINTX=$(LINTF),-build/c++11,-runtime/references
 ARGS=#= Execution arguments, e.g: 'ARGS=100 "a text"'
 ARGSJR=-ea
+RUNPRE=#= Execution prefix e.g: for `time ./myapp` run `make RUNPRE=time`
+RUNSUF=#= Execution suffix e.g: for `./myapp |sort` run `make RUNSUF=|sort`
 GITUSER=Aaron Santana Valdelomar
 GITEMAIL=aaron.santana@ucr.ac.cr
 GITTIME=10800#= Store git password in memory for this amount of seconds (default 3h)
@@ -159,28 +161,32 @@ ifeq (, $(shell which $(firstword $(DIFF)) 2> /dev/null))
 	DIFF=diff
 endif # icdiff not installed, use diff
 
+define run_test
+$(strip $(RUNPRE) $($(1)) $(shell [ ! -z "$(2)" ] && cat $(2)) < $< $(RUNSUF))
+endef
+
 # TODO(any): Remove redundancy
-exe/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	-$(DIFF) $(word 2,$^) <($(EXEARGS) < $<) ||:
+exe/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt $$(wildcard $(TESTS)/args%.txt)
+	-$(DIFF) $(word 2,$^) <($(call run_test,EXEARGS,$(word 3,$^))) ||:
 
 jar/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	-$(DIFF) $(word 2,$^) <($(JARARGS) < $<) ||:
+	-$(DIFF) $(word 2,$^)) <($(call run_test,JARARGS,$(word 3,$^))) ||:
 
 py3/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	-$(DIFF) $(word 2,$^) <($(PY3ARGS) < $<) ||:
+	-$(DIFF) $(word 2,$^)) <($(call run_test,PY3ARGS,$(word 3,$^))) ||:
 
 # <L>out  ## Generate test case output using language L: cpp|java|py
 cppout: $(TARGETS) $(OUTPUTX)
-cppout/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	$(EXEARGS) < $< > $(word 2,$^)
+cppout/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt $$(wildcard $(TESTS)/args%.txt)
+	$(call run_test,EXEARGS,$(word 3,$^)) > $(word 2,$^)
 
 javaout: $(TARGETS) $(OUTPUTJ)
 javaout/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	$(JARARGS) < $< > $(word 2,$^)
+	$(call run_test,JARARGS,$(word 3,$^)) > $(word 2,$^)
 
 pyout: $(TARGETS) $(OUTPUTP)
 pyout/output%.txt: $(TESTS)/input%.txt $(TESTS)/output%.txt
-	$(PY3ARGS) < $< > $(word 2,$^)
+	$(call run_test,PY3ARGS,$(word 3,$^)) > $(word 2,$^)
 
 # tc=N  ## Generates N empty test cases in tests/
 .PRECIOUS: $(TESTS)/%.txt
@@ -238,13 +244,13 @@ endif
 
 run: $(TARGETS)  ## Run executable using ARGS value as arguments
 ifneq ($(EXEARGS),)
-	$(EXEARGS)
+	$(strip $(RUNPRE) $(EXEARGS) $(RUNSUF))
 endif
 ifneq ($(JARARGS),)
-	$(JARARGS)
+	$(strip $(RUNPRE) $(JARARGS) $(RUNSUF))
 endif
 ifneq ($(PY3ARGS),)
-	$(PY3ARGS)
+	$(strip $(RUNPRE) $(PY3ARGS) $(RUNSUF))
 endif
 
 memcheck: $(EXEFILE)  ## Run executable for detecting memory errors with Valgrind
