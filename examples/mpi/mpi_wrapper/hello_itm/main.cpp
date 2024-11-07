@@ -13,8 +13,8 @@ int main(int argc, char* argv[]) {
     usleep(100000 * (mpi.size() - mpi.rank()));
     std::stringstream message;
     message << "Hello from main thread of process " << mpi.getProcessNumber()
-        << " of " << mpi.getProcessCount() << " on " << mpi.getHostname()
-        << std::endl;
+        << " of " << mpi.getProcessCount() << std::endl; // << " on " << mpi.getHostname()
+        
     if (mpi.rank() == 0) {
       std::vector<std::string> greetings(mpi.size());
       greetings[mpi.rank()] = message.str();
