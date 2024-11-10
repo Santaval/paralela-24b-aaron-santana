@@ -71,20 +71,5 @@ typedef struct {
     Plate* writePlate;  /// < new plate
     JobData jobData;  /// < job data
     size_t totalIterations;  /// < total number of iterations
-    pthread_mutex_t can_accsess_isBalanced;  /// < mutex for isBalanced
-    pthread_mutex_t barrierMutex;  /// < mutex for barrier
-    sem_t turnstile1;  /// < semaphore for barrier 1
-    sem_t turnstile2;  /// < semaphore for barrier 2
-    size_t barrierCount;  /// < number of threads that have reached the barrier
     size_t currentCell;  /// < current cell being processed
-    pthread_mutex_t can_accsess_currentCell;  /// < mutex for currentCell
 } SharedData;
-
-// thread_private_data_t
-struct private_data {
-  size_t thread_number;  // rank
-  size_t thread_count;
-  void* data;
-  pthread_t thread_id;
-};
-
