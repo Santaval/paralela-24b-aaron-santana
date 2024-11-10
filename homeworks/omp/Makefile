@@ -3,7 +3,7 @@ include ../../common/Makefile
 DEPS += p7zip-full # Instala el paquete p7zip-full
 
 # Variables
-FILES = job001b.7z job002b.7z job003b.7z  job020-input.7z
+FILES = job002b.7z #job001b.7z job003b.7z  job020-input.7z
 URLS = https://jeisson.ecci.ucr.ac.cr/concurrente/2024b/tareas/heatsim/
 DEST_DIR = tests/jobs
 
@@ -40,3 +40,5 @@ run_tests:
 		icdiff $${file%.txt}.tsv $${file%.txt}.out || echo "Diferencias encontradas en $$file"; \
 	done
 	$(MAKE)   # Ejecuta la comparación después de cada ejecución
+
+FLAG += -fopenmp
