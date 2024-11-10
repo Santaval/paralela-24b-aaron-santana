@@ -79,17 +79,14 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
 }
 
 void calcNewTemperature(SharedData* sharedData) {
-
-
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
-                    (jobData.plateCellDimmensions *
-                    jobData.plateCellDimmensions);
+                    (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
 
     while (1) {
         double** currentPlateData = sharedData->readPlate->data;
         double** newPlateData = sharedData->writePlate->data;
-        int localIsBalanced = 1;
+        int isBalanced = 1;
 
         if (sharedData->writePlate->isBalanced == 2) {
             break;
@@ -97,50 +94,48 @@ void calcNewTemperature(SharedData* sharedData) {
 
         const size_t rows = sharedData->readPlate->rows;
         const size_t cols = sharedData->readPlate->cols;
-        const size_t totalCells = rows * cols;
-        const size_t cellsPerThread = totalCells / sharedData->threadCount;
-        const size_t startRow = sharedData->currentCell;
-        const size_t endRow = startRow + cellsPerThread;
 
-
-        // Procesar las celdas en el rango de filas asignadas al hilo
-        // mapeo por bloques
-        for (size_t row = startRow; row < endRow; ++row) {
+        #pragma omp parallel for reduction(&:isBalanced)
+        for (size_t row = 1; row < rows - 1; ++row) {
+            int localIsBalanced = 1;
             for (size_t col = 1; col < cols - 1; ++col) {
-                if (row > 0 && row < rows - 1) {
-                    double left = currentPlateData[row][col - 1];
-                    double right = currentPlateData[row][col + 1];
-                    double up = currentPlateData[row - 1][col];
-                    double down = currentPlateData[row + 1][col];
-                    double cell = currentPlateData[row][col];
+                double left = currentPlateData[row][col - 1];
+                double right = currentPlateData[row][col + 1];
+                double up = currentPlateData[row - 1][col];
+                double down = currentPlateData[row + 1][col];
+                double cell = currentPlateData[row][col];
 
-                    double newTemperature = cell + factor *
-                    (left + right  + up + down - 4 * cell);
-                      newPlateData[row][col] = newTemperature;
+                double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+                newPlateData[row][col] = newTemperature;
 
-                    if (fabs(newTemperature - cell) > jobData.balancePoint) {
-                        localIsBalanced = 0;  // No está balanceado
-                    }
+                if (fabs(newTemperature - cell) > jobData.balancePoint) {
+                    localIsBalanced = 0;  // No está balanceado
                 }
             }
-        }
-        // critical section !!!!!!!!!!!!!!
-
-        sharedData->writePlate->isBalanced =
-          sharedData->writePlate->isBalanced && localIsBalanced;
-
-        // Esperar a que todos los hilos terminen
-            if (sharedData->writePlate->isBalanced) {
-              sharedData->writePlate->isBalanced = 2;
-            } else {
-              sharedData->writePlate->isBalanced = 1;
-              // swap plates
-              Plate* temp = sharedData->readPlate;
-              sharedData->readPlate = sharedData->writePlate;
-              sharedData->writePlate = temp;
-              sharedData->totalIterations++;
-              sharedData->currentCell = 0;
+            // Actualiza la variable isBalanced de manera segura
+            if (localIsBalanced == 0) {
+                isBalanced = 0;
             }
+        }
+
+        // Actualizar el estado de balance de la placa
+        #pragma omp single
+        {
+            sharedData->writePlate->isBalanced = isBalanced ? 2 : 1;
+        }
+
+        // Intercambiar placas y actualizar iteraciones
+        #pragma omp single
+        {
+            if (!isBalanced) {
+                Plate* temp = sharedData->readPlate;
+                sharedData->readPlate = sharedData->writePlate;
+                sharedData->writePlate = temp;
+                sharedData->totalIterations++;
+            }
+        }
+
+        #pragma omp barrier // Sincronizar los hilos antes de la siguiente iteración
     }
 
     return;
