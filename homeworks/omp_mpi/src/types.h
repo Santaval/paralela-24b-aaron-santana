@@ -10,10 +10,11 @@
  */
 
 typedef struct  {
-    double** data;  /// < matrix of doubles representing the plate
+    double* data;  /// < matrix of doubles representing the plate
     short isBalanced;  /// < indicates if the plate is balanced
     size_t rows;  /// < number of rows in the plate
     size_t cols;  /// < number of columns in the plate
+    size_t size; /// < number of cells (elements) in the plate
 } Plate;
 
 /**
@@ -27,8 +28,8 @@ typedef struct {
     size_t threadsCount;  /// < number of threads to be used
     short isVerbose;  /// < indicates if the program should print verbose output
     short shloudPrintIterations;  /// < indicates if the program
-        /// should print the
-        /// number of iterations counted in the simulation
+    int argc;  /// < number of arguments
+    char** argv;  /// < arguments
 } Arguments;
 
 /**
@@ -73,3 +74,4 @@ typedef struct {
     size_t totalIterations;  /// < total number of iterations
     size_t currentCell;  /// < current cell being processed
 } SharedData;
+

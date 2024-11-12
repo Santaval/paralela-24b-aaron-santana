@@ -9,6 +9,7 @@
 #include <math.h>
 #include <time.h>
 #include <unistd.h>
+#include <mpi.h>
 
 #include "input.h"
 #include "solution.h"
@@ -64,7 +65,7 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   sharedData->totalIterations = 0;
   sharedData->currentCell = 0;
 
-  calcNewTemperature(sharedData);
+  calcNewTemperature(sharedData, args);
 
 
 
@@ -78,14 +79,17 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   return result;
 }
 
-void calcNewTemperature(SharedData* sharedData) {
+void calcNewTemperature(SharedData* sharedData, Arguments args) {
+
+    // MPI_Init(&args.argc, &args.argv);
+
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
                     (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
 
     while (1) {
-        double** currentPlateData = sharedData->readPlate->data;
-        double** newPlateData = sharedData->writePlate->data;
+        double* currentPlateData = sharedData->readPlate->data;
+        double* newPlateData = sharedData->writePlate->data;
         int isBalanced = 1;
 
         if (sharedData->writePlate->isBalanced == 2) {
@@ -96,17 +100,17 @@ void calcNewTemperature(SharedData* sharedData) {
         const size_t cols = sharedData->readPlate->cols;
 
         #pragma omp parallel for reduction(&:isBalanced)
-        for (size_t row = 1; row < rows - 1; ++row) {
+        for (size_t row = cols; row < cols * (rows - 1); row += cols) {
             int localIsBalanced = 1;
-            for (size_t col = 1; col < cols - 1; ++col) {
-                double left = currentPlateData[row][col - 1];
-                double right = currentPlateData[row][col + 1];
-                double up = currentPlateData[row - 1][col];
-                double down = currentPlateData[row + 1][col];
-                double cell = currentPlateData[row][col];
+            for (size_t col = row + 1; col < (cols - 2); ++col) {
+                double left = currentPlateData[(row * col) - 1];
+                double right = currentPlateData[(row * col) + 1];
+                double up = currentPlateData[(row - 1) * col];
+                double down = currentPlateData[(row + 1) * col];
+                double cell = currentPlateData[row * col];
 
                 double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
-                newPlateData[row][col] = newTemperature;
+                newPlateData[row * col] = newTemperature;
 
                 if (fabs(newTemperature - cell) > jobData.balancePoint) {
                     localIsBalanced = 0;  // No está balanceado
@@ -138,6 +142,8 @@ void calcNewTemperature(SharedData* sharedData) {
         #pragma omp barrier // Sincronizar los hilos antes de la siguiente iteración
     }
 
+    //MPI_Finalize();
+
     return;
 }
 
@@ -146,37 +152,12 @@ Plate* copyPlate(Plate* plate) {
   Plate* newPlate = malloc(sizeof(Plate));
   newPlate->rows = plate->rows;
   newPlate->cols = plate->cols;
+  newPlate->size = plate->size;
   newPlate->isBalanced = plate->isBalanced;
-  newPlate->data = malloc(newPlate->rows * sizeof(double*));
-  for (size_t i = 0; i < newPlate->rows; i++) {
-    newPlate->data[i] = malloc(newPlate->cols * sizeof(double));
-    memcpy(newPlate->data[i], plate->data[i], newPlate->cols * sizeof(double));
-  }
+  newPlate->data = malloc(newPlate->size * sizeof(double));
+  memcpy(newPlate->data, plate->data, newPlate->size * sizeof(double));
+  
   return newPlate;
-}
-
-void copyPlateBorders(Plate original, Plate copy) {
-  // top
-  for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
-    copy.data[0][colIndex] = original.data[0][colIndex];
-  }
-
-  // left
-  for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
-    copy.data[rowIndex][0] = original.data[rowIndex][0];
-  }
-
-  // right
-  for (size_t rowIndex = 0; rowIndex < original.rows; rowIndex++) {
-    copy.data[rowIndex][original.cols - 1]
-      = original.data[rowIndex][original.cols - 1];
-  }
-
-  // bottom
-  for (size_t colIndex = 0; colIndex < original.cols; colIndex++) {
-    copy.data[original.rows - 1][colIndex]
-      = original.data[original.rows - 1][colIndex];
-  }
 }
 
 
@@ -209,9 +190,6 @@ void destroyJobsData(JobData *jobsData, size_t jobsCount) {
 }
 
 void destroyPlate(Plate* plate) {
-  for (size_t i = 0; i < plate->rows; i++) {
-    free(plate->data[i]);
-  }
   free(plate->data);
   free(plate);
 }

@@ -67,7 +67,7 @@ void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
  * @param data The data needed to calculate the new temperature.
  * @return A pointer to the calculated new temperature.
  */
-void calcNewTemperature(SharedData* sharedData);
+void calcNewTemperature(SharedData* sharedData, Arguments args);
 
 
 /**

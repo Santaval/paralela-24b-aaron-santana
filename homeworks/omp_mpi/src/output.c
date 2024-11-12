@@ -8,7 +8,7 @@
 void printPlate(Plate* plate) {
   for (size_t i = 0; i < plate->rows; i++) {
     for (size_t j = 0; j < plate->cols; j++) {
-      printf("%.1lf ", plate->data[i][j]);
+      printf("%.1lf ", plate->data[i * j]);
     }
     printf("\n");
   }
@@ -33,7 +33,7 @@ void writePlate(Plate* plate, const char* binaryFilepath) {
   fwrite(&plate->cols, sizeof(size_t), 1, binaryFile);
 
   for (size_t i=0; i< plate->rows; i++) {
-      fwrite(plate->data[i], sizeof(double), plate->cols, binaryFile);
+      fwrite(plate->data, sizeof(double), plate->size, binaryFile);
   }
 
   fclose(binaryFile);
