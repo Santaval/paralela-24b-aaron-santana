@@ -40,3 +40,5 @@ run_tests:
 		icdiff $${file%.txt}.tsv $${file%.txt}.out || echo "Diferencias encontradas en $$file"; \
 	done
 	$(MAKE)   # Ejecuta la comparación después de cada ejecución
+
+FLAGS += -pthread
