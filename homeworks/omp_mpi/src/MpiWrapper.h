@@ -1,3 +1,5 @@
+// Copyright <2024> <Aaron Santana Valdelomar - UCR>
+
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,11 +22,11 @@ int mpi_init(Mpi* mpi, int* argc, char*** argv) {
         return -1;
     }
 
-    if(MPI_Comm_size(MPI_COMM_WORLD, &mpi->size) != MPI_SUCCESS) {
+    if (MPI_Comm_size(MPI_COMM_WORLD, &mpi->size) != MPI_SUCCESS) {
         fprintf(stderr, "Error: could not get MPI rank\n");
         return -1;
     }
-    if(MPI_Get_processor_name(mpi->hostname, &hostname_len) != MPI_SUCCESS) {
+    if (MPI_Get_processor_name(mpi->hostname, &hostname_len) != MPI_SUCCESS) {
         fprintf(stderr, "Error: could not get MPI rank\n");
         return -1;
     }
@@ -35,16 +37,14 @@ void mpi_finalize() {
     MPI_Finalize();
 }
 
-int mpi_send(const void* data, int count,MPI_Datatype dataType,
+int mpi_send(const void* data, int count, MPI_Datatype dataType,
 int toProcess, int tag) {
-
     if (MPI_Send(data, count, dataType, toProcess, tag, MPI_COMM_WORLD)
         != MPI_SUCCESS) {
             fprintf(stderr, "Error: could not send data \n");
             return -1;
         }
     return 0;
-
 }
 
 int mpi_receive(void* data, int count, MPI_Datatype dataType,

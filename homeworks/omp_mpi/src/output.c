@@ -21,7 +21,6 @@ void printPlate(Plate* plate) {
 
 // code adapted from <https://es.stackoverflow.com/questions/358361/escribir-leer-estructuras-en-archivos-binarios>
 void writePlate(Plate* plate, const char* binaryFilepath) {
-
   FILE *binaryFile;
   binaryFile = fopen(binaryFilepath, "wb");
 

@@ -45,8 +45,8 @@ typedef struct {
     double plateCellDimmensions;  /// < dimensions of the plate cells
     double balancePoint;  /// < balance point of the plate
     char* directory;  /// < directory where the results will be written
-    size_t threadCount; /// < number of threads on thread team
-    int jobIndex; /// < index of the job
+    size_t threadCount;  /// < number of threads on thread team
+    int jobIndex;  /// < index of the job
 } JobData;
 
 /**
@@ -57,7 +57,7 @@ typedef struct {
 typedef struct {
     Plate* plate;  /// < plate resulting from the simulation
     size_t iterations;  /// < number of iterations performed in the simulation
-    int jobIndex; /// < index of the job
+    int jobIndex;  /// < index of the job
 } SimulationResult;
 
 /**

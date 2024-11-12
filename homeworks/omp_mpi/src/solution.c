@@ -60,8 +60,7 @@ int main(int argc, char** argv) {
     }
 
     // receive jobs results
-    while (disconnectedCount < (mpi.size - 1))
-    { 
+    while (disconnectedCount < (mpi.size - 1)) {
       int* source = malloc(1 * sizeof(int));
       SimulationResult result;
       receiveJobResult(&result, MPI_ANY_SOURCE, source);
@@ -75,7 +74,6 @@ int main(int argc, char** argv) {
         mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, *source, 0);
         mpi_receive(&DISCONNECT_SIGNAL, 1, MPI_INT, *source, 0, NULL);
         disconnectedCount++;
-        printf("Me, process %d, received a disconnect signal from process %d\n", mpi.rank, *source);
       }
 
       processedCount++;
@@ -85,21 +83,17 @@ int main(int argc, char** argv) {
     writeJobsResult(jobsData, results, jobsCount, "output.txt");
     destroyJobsData(jobsData, jobsCount);
     destroySimulationResult(results, jobsCount);
-    printf("Me, process %d, im disconnecting\n", mpi.rank);
 
   } else {
-    while (true)
-    { 
+    while (true) {
       bool shouldProcessAJob;
       mpi_receive(&shouldProcessAJob, 1, MPI_C_BOOL, MAIN_PROCESS, 0, NULL);
       if (shouldProcessAJob) {
         JobData jobData;
         receiveJobData(&jobData, MAIN_PROCESS);
-        printf("Me, process %d, received the job number %d\n", mpi.rank, jobData.jobIndex);
         SimulationResult result = processJob(jobData);
         result.jobIndex = jobData.jobIndex;
         sendJobResult(&result, MAIN_PROCESS);
-        printf("Me, process %d, sent the result of job number %d\n", mpi.rank, result.jobIndex);
       } else {
         mpi_send(&DISCONNECT_SIGNAL, 1, MPI_INT, MAIN_PROCESS, 0);
         break;
@@ -122,9 +116,9 @@ void sendJobData(JobData* jobData, int dest) {
     int directoryLength = strlen(jobData->directory) + 1;
 
     mpi_send(&plateFileLength, 1, MPI_INT, dest, 0);
-    mpi_send(jobData->plateFile, plateFileLength, MPI_CHAR, dest,1);
+    mpi_send(jobData->plateFile, plateFileLength, MPI_CHAR, dest, 1);
     mpi_send(&directoryLength, 1, MPI_INT, dest, 2);
-    mpi_send(jobData->directory, directoryLength, MPI_CHAR, dest,3);
+    mpi_send(jobData->directory, directoryLength, MPI_CHAR, dest, 3);
 
     mpi_send(&jobData->duration, 1, MPI_DOUBLE, dest, 4);
     mpi_send(&jobData->thermalDiffusivity, 1, MPI_DOUBLE, dest, 5);
@@ -151,7 +145,6 @@ void receiveJobData(JobData* jobData, int source) {
   mpi_receive(&jobData->balancePoint, 1, MPI_DOUBLE, source, 7, NULL);
   mpi_receive(&jobData->threadCount, 1, MPI_DOUBLE, source, 8, NULL);
   mpi_receive(&jobData->jobIndex, 1, MPI_INT, source, 9, NULL);
-
 }
 
 void sendJobResult(SimulationResult* result, int dest) {
@@ -171,7 +164,6 @@ void sendJobResult(SimulationResult* result, int dest) {
 }
 
 void receiveJobResult(SimulationResult* result, int source, int* sourceCb) {
-
   size_t rows = 0;
   size_t cols = 0;
 
@@ -232,7 +224,7 @@ SimulationResult simulate(JobData jobData, Plate* plate) {
 void calcNewTemperature(SharedData* sharedData) {
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
-                    (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
+      (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
 
     while (1) {
         double** currentPlateData = sharedData->readPlate->data;
@@ -256,7 +248,8 @@ void calcNewTemperature(SharedData* sharedData) {
                 double down = currentPlateData[row + 1][col];
                 double cell = currentPlateData[row][col];
 
-                double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
+                double newTemperature = cell + factor *
+                  (left + right + up + down - 4 * cell);
                 newPlateData[row][col] = newTemperature;
 
                 if (fabs(newTemperature - cell) > jobData.balancePoint) {
@@ -285,8 +278,8 @@ void calcNewTemperature(SharedData* sharedData) {
                 sharedData->totalIterations++;
             }
         }
-
-        #pragma omp barrier // Sincronizar los hilos antes de la siguiente iteración
+        // Sincronizar los hilos antes de la siguiente iteración
+        #pragma omp barrier
     }
 
     return;
