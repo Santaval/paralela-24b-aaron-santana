@@ -111,7 +111,7 @@ Plate* readPlate(const char *binaryFilepath, char *directory) {
   Plate* plate = malloc(sizeof(Plate));
   FILE *binaryFile;
   size_t rows, cols;
-  double *matrix;
+  double **matrix;
   char path[MAX_PATH_SIZE];
   snprintf(path, MAX_PATH_SIZE, "%s/%s", directory, binaryFilepath);
   binaryFile = fopen(path, "rb");
@@ -124,15 +124,16 @@ Plate* readPlate(const char *binaryFilepath, char *directory) {
   fread(&rows, sizeof(size_t), 1, binaryFile);
   fread(&cols, sizeof(size_t), 1, binaryFile);
 
-  const size_t size = rows * cols;
-  matrix = (double *)malloc(size * sizeof(double));
-  fread(matrix, sizeof(double), size, binaryFile);
-  
+  matrix = (double **)malloc(rows * sizeof(double *));
+  for (size_t i = 0; i < rows; i++) {
+    matrix[i] = (double *)malloc(cols * sizeof(double));
+    fread(matrix[i], sizeof(double), cols, binaryFile);
+  }
+
   fclose(binaryFile);
   plate->data = matrix;
   plate->rows = rows;
   plate->cols = cols;
-  plate->size = size;
   plate->isBalanced = 0;
   return plate;
 }

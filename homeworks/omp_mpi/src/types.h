@@ -11,11 +11,10 @@
  */
 
 typedef struct  {
-    double* data;  /// < matrix of doubles representing the plate
+    double** data;  /// < matrix of doubles representing the plate
     short isBalanced;  /// < indicates if the plate is balanced
     size_t rows;  /// < number of rows in the plate
     size_t cols;  /// < number of columns in the plate
-    size_t size; /// < number of cells (elements) in the plate
 } Plate;
 
 /**

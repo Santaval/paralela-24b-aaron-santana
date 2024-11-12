@@ -9,7 +9,7 @@
 #include <math.h>
 #include <time.h>
 #include <unistd.h>
-#include <mpi.h>
+// #include <mpi.h>
 
 #include "input.h"
 #include "solution.h"
@@ -65,8 +65,6 @@ int main(int argc, char** argv) {
       int* source = malloc(1 * sizeof(int));
       SimulationResult result;
       receiveJobResult(&result, MPI_ANY_SOURCE, source);
-      //printf("Me, process %d, received the result of job number %d\n", mpi.rank, result.jobIndex);
-      //writeJobResult(jobsData[result.jobIndex], result, stdout);
       results[result.jobIndex] = result;
       if (processedCount < jobsCount) {
         bool shouldProcessAJob = true;
@@ -77,18 +75,17 @@ int main(int argc, char** argv) {
         mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, *source, 0);
         mpi_receive(&DISCONNECT_SIGNAL, 1, MPI_INT, *source, 0, NULL);
         disconnectedCount++;
-        //printf("Me, process %d, received a disconnect signal from process %d\n", mpi.rank, *source);
+        printf("Me, process %d, received a disconnect signal from process %d\n", mpi.rank, *source);
       }
 
       processedCount++;
     }
 
 
-
     writeJobsResult(jobsData, results, jobsCount, "output.txt");
     destroyJobsData(jobsData, jobsCount);
     destroySimulationResult(results, jobsCount);
-   // printf("Me, process %d, im disconnecting\n", mpi.rank);
+    printf("Me, process %d, im disconnecting\n", mpi.rank);
 
   } else {
     while (true)
@@ -98,12 +95,11 @@ int main(int argc, char** argv) {
       if (shouldProcessAJob) {
         JobData jobData;
         receiveJobData(&jobData, MAIN_PROCESS);
-       // printf("Me, process %d, received the job number %d\n", mpi.rank, jobData.jobIndex);
-        usleep(1000000); // 1 second
+        printf("Me, process %d, received the job number %d\n", mpi.rank, jobData.jobIndex);
         SimulationResult result = processJob(jobData);
         result.jobIndex = jobData.jobIndex;
         sendJobResult(&result, MAIN_PROCESS);
-        //printf("Me, process %d, sent the result of job number %d\n", mpi.rank, result.jobIndex);
+        printf("Me, process %d, sent the result of job number %d\n", mpi.rank, result.jobIndex);
       } else {
         mpi_send(&DISCONNECT_SIGNAL, 1, MPI_INT, MAIN_PROCESS, 0);
         break;
@@ -159,25 +155,42 @@ void receiveJobData(JobData* jobData, int source) {
 }
 
 void sendJobResult(SimulationResult* result, int dest) {
-  size_t plateSize = result->plate->size;
+  size_t rows = result->plate->rows;
+  size_t cols = result->plate->cols;
 
-  mpi_send(&plateSize, 1, MPI_INT, dest, 0);
-  mpi_send(result->plate->data, plateSize, MPI_DOUBLE, dest, 1);
+  mpi_send(&rows, 1, MPI_INT, dest, 0);
+  mpi_send(&cols, 1, MPI_INT, dest, 1);
+  for (size_t i = 0; i < rows; i++) {
+    mpi_send(result->plate->data[i], cols, MPI_DOUBLE, dest, i + 2);
+  }
 
-  mpi_send(&result->iterations, 1, MPI_INT, dest, 2);
-  mpi_send(&result->jobIndex, 1, MPI_INT, dest, 3);
+
+
+  mpi_send(&result->iterations, 1, MPI_INT, dest, rows + 2);
+  mpi_send(&result->jobIndex, 1, MPI_INT, dest, rows + 3);
 }
 
 void receiveJobResult(SimulationResult* result, int source, int* sourceCb) {
 
-  int plateSize;
-  mpi_receive(&plateSize, 1, MPI_INT, source, 0, NULL);
-  result->plate = malloc(sizeof(Plate));
-  result->plate->data = malloc(plateSize * sizeof(double));
-  mpi_receive(result->plate->data, plateSize, MPI_DOUBLE, source, 1, NULL);
+  size_t rows = 0;
+  size_t cols = 0;
 
-  mpi_receive(&result->iterations, 1, MPI_INT, source, 2, sourceCb);
-  mpi_receive(&result->jobIndex, 1, MPI_INT, source, 3, NULL);
+  mpi_receive(&rows, 1, MPI_INT, source, 0, NULL);
+  mpi_receive(&cols, 1, MPI_INT, source, 1, NULL);
+
+  Plate* plate = malloc(sizeof(Plate));
+  plate->rows = rows;
+  plate->cols = cols;
+  plate->data = malloc(rows * sizeof(double*));
+  for (size_t i = 0; i < rows; i++) {
+    plate->data[i] = malloc(cols * sizeof(double));
+    mpi_receive(plate->data[i], cols, MPI_DOUBLE, source, i + 2, NULL);
+  }
+
+  result->plate = plate;
+
+  mpi_receive(&result->iterations, 1, MPI_INT, source, rows + 2, NULL);
+  mpi_receive(&result->jobIndex, 1, MPI_INT, source, rows + 3, sourceCb);
 }
 
 
@@ -185,7 +198,7 @@ void receiveJobResult(SimulationResult* result, int source, int* sourceCb) {
 SimulationResult processJob(JobData jobData) {
   Plate* plate = readPlate(jobData.plateFile, jobData.directory);
   SimulationResult result = simulate(jobData, plate);
-  writeJobResult(jobData, result, stdout);
+  // writeJobResult(jobData, result, stdout);
   return result;
 }
 
@@ -217,14 +230,13 @@ SimulationResult simulate(JobData jobData, Plate* plate) {
 }
 
 void calcNewTemperature(SharedData* sharedData) {
-
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
                     (jobData.plateCellDimmensions * jobData.plateCellDimmensions);
 
     while (1) {
-        double* currentPlateData = sharedData->readPlate->data;
-        double* newPlateData = sharedData->writePlate->data;
+        double** currentPlateData = sharedData->readPlate->data;
+        double** newPlateData = sharedData->writePlate->data;
         int isBalanced = 1;
 
         if (sharedData->writePlate->isBalanced == 2) {
@@ -235,17 +247,17 @@ void calcNewTemperature(SharedData* sharedData) {
         const size_t cols = sharedData->readPlate->cols;
 
         #pragma omp parallel for reduction(&:isBalanced)
-        for (size_t row = cols; row < cols * (rows - 1); row += cols) {
+        for (size_t row = 1; row < rows - 1; ++row) {
             int localIsBalanced = 1;
-            for (size_t col = row + 1; col < (cols - 2); ++col) {
-                double left = currentPlateData[(row * col) - 1];
-                double right = currentPlateData[(row * col) + 1];
-                double up = currentPlateData[(row - 1) * col];
-                double down = currentPlateData[(row + 1) * col];
-                double cell = currentPlateData[row * col];
+            for (size_t col = 1; col < cols - 1; ++col) {
+                double left = currentPlateData[row][col - 1];
+                double right = currentPlateData[row][col + 1];
+                double up = currentPlateData[row - 1][col];
+                double down = currentPlateData[row + 1][col];
+                double cell = currentPlateData[row][col];
 
                 double newTemperature = cell + factor * (left + right + up + down - 4 * cell);
-                newPlateData[row * col] = newTemperature;
+                newPlateData[row][col] = newTemperature;
 
                 if (fabs(newTemperature - cell) > jobData.balancePoint) {
                     localIsBalanced = 0;  // No está balanceado
@@ -276,6 +288,7 @@ void calcNewTemperature(SharedData* sharedData) {
 
         #pragma omp barrier // Sincronizar los hilos antes de la siguiente iteración
     }
+
     return;
 }
 
@@ -284,14 +297,14 @@ Plate* copyPlate(Plate* plate) {
   Plate* newPlate = malloc(sizeof(Plate));
   newPlate->rows = plate->rows;
   newPlate->cols = plate->cols;
-  newPlate->size = plate->size;
   newPlate->isBalanced = plate->isBalanced;
-  newPlate->data = malloc(newPlate->size * sizeof(double));
-  memcpy(newPlate->data, plate->data, newPlate->size * sizeof(double));
-  
+  newPlate->data = malloc(newPlate->rows * sizeof(double*));
+  for (size_t i = 0; i < newPlate->rows; i++) {
+    newPlate->data[i] = malloc(newPlate->cols * sizeof(double));
+    memcpy(newPlate->data[i], plate->data[i], newPlate->cols * sizeof(double));
+  }
   return newPlate;
 }
-
 
 void format_time(time_t seconds, char *buffer, size_t buffer_size) {
     int years, months, days, hours, minutes, secs;
@@ -322,6 +335,9 @@ void destroyJobsData(JobData *jobsData, size_t jobsCount) {
 }
 
 void destroyPlate(Plate* plate) {
+  for (size_t i = 0; i < plate->rows; i++) {
+    free(plate->data[i]);
+  }
   free(plate->data);
   free(plate);
 }
