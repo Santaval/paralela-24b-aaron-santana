@@ -14,8 +14,6 @@ Arguments processArguments(int argc, char **argv) {
   Arguments args;
   args.isVerbose = 0;
   args.shloudPrintIterations = 0;
-  args.argc = argc;
-  args.argv = argv;
 
   if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
     strcmp(argv[1], "--help") == 0)) {
@@ -75,6 +73,7 @@ JobData *readJobData(const char *jobFile) {
 
   // Read the job data from the file and store it in the array
   for (size_t i = 0; i < jobs; i++) {
+    jobData[i].jobIndex = i;
     jobData[i].plateFile = malloc(MAX_PATH_SIZE * sizeof(char));
     jobData[i].directory = malloc(MAX_PATH_SIZE * sizeof(char));
     fscanf(file, "%s", jobData[i].plateFile);

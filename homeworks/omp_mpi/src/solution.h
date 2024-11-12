@@ -15,7 +15,7 @@
  * @param args The arguments for the simulation.
  * @return The result of the job processing.
  */
-SimulationResult processJob(JobData jobData, Arguments args);
+SimulationResult processJob(JobData jobData);
 
 /**
  * Simulates the given job data on the specified plate.
@@ -25,7 +25,7 @@ SimulationResult processJob(JobData jobData, Arguments args);
  * @param args The arguments for the simulation.
  * @return The result of the simulation.
  */
-SimulationResult simulate(JobData jobData, Plate* plate, Arguments args);
+SimulationResult simulate(JobData jobData, Plate* plate);
 
 /**
  * @brief Creates a copy of a Plate object.
@@ -49,17 +49,6 @@ Plate* copyPlate(Plate* plate);
 void copyPlateBorders(Plate original, Plate copy);
 
 
-/**
- * Perform a simulation iteration using the given job data, read plate, write plate, and arguments.
- *
- * @param jobData The job data for the simulation iteration.
- * @param readPlate The plate to read data from.
- * @param writePlate The plate to write data to.
- * @param args The arguments for the simulation iteration.
- */
-void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
-    Arguments args);
-
 
 /**
  * Calculates the new temperature based on the given data.
@@ -67,7 +56,7 @@ void simulationIteration(JobData jobData, Plate* readPlate, Plate* writePlate,
  * @param data The data needed to calculate the new temperature.
  * @return A pointer to the calculated new temperature.
  */
-void calcNewTemperature(SharedData* sharedData, Arguments args);
+void calcNewTemperature(SharedData* sharedData);
 
 
 /**
@@ -125,3 +114,10 @@ struct private_data* create_threads(size_t thread_count,
  * @return Returns an integer indicating the success or failure of the operation.
  */
 int join_threads(const size_t thread_count, struct private_data* team);
+
+
+void sendJobData(JobData* jobData, int dest);
+void receiveJobData(JobData* jobData, int source);
+
+void sendJobResult(SimulationResult* result, int dest);
+void receiveJobResult(SimulationResult* result, int source, int* sourceCb);

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+
 /**
  * @brief Structure representing a plate with data, number of rows, and number of columns.
  */
@@ -28,8 +29,6 @@ typedef struct {
     size_t threadsCount;  /// < number of threads to be used
     short isVerbose;  /// < indicates if the program should print verbose output
     short shloudPrintIterations;  /// < indicates if the program
-    int argc;  /// < number of arguments
-    char** argv;  /// < arguments
 } Arguments;
 
 /**
@@ -47,6 +46,8 @@ typedef struct {
     double plateCellDimmensions;  /// < dimensions of the plate cells
     double balancePoint;  /// < balance point of the plate
     char* directory;  /// < directory where the results will be written
+    size_t threadCount; /// < number of threads on thread team
+    int jobIndex; /// < index of the job
 } JobData;
 
 /**
@@ -57,6 +58,7 @@ typedef struct {
 typedef struct {
     Plate* plate;  /// < plate resulting from the simulation
     size_t iterations;  /// < number of iterations performed in the simulation
+    int jobIndex; /// < index of the job
 } SimulationResult;
 
 /**

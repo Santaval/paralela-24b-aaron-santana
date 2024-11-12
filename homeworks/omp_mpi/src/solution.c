@@ -14,6 +14,7 @@
 #include "input.h"
 #include "solution.h"
 #include "output.h"
+#include "MpiWrapper.h"
 
 /**
  * @brief Start program execution.
@@ -21,51 +22,187 @@
  * @return Status code to the operating system, 0 means success.
  */
 int main(int argc, char** argv) {
-    struct timespec start, end;
+  struct timespec start, end;
   clock_gettime(CLOCK_MONOTONIC, &start);
-  Arguments args = processArguments(argc, argv);
-  JobData* jobsData = readJobData(args.jobFile);
-  size_t jobsCount = calcFileLinesCount(args.jobFile);
-  SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
-  assert(results != NULL);
-  for (size_t i = 0; i < jobsCount; i++) {
-    results[i] = processJob(jobsData[i], args);
+
+
+  Mpi mpi;
+  mpi_init(&mpi, &argc, &argv);
+
+
+  int MAIN_PROCESS = 0;
+  int DISCONNECT_SIGNAL = 1;
+  int REQUEST_NEWJOB = 2;
+
+
+  if (mpi.rank == MAIN_PROCESS) {
+    Arguments args = processArguments(argc, argv);
+    JobData* jobsData = readJobData(args.jobFile);
+    size_t jobsCount = calcFileLinesCount(args.jobFile);
+    SimulationResult* results = malloc(jobsCount * sizeof(SimulationResult));
+    size_t processedCount = 0;
+    int disconnectedCount = 0;
+
+    // distribute first jobs
+
+    for (int i = 1; i < mpi.size; i++) {
+      if (processedCount < jobsCount) {
+        bool shouldProcessAJob = true;
+        mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, i, 0);
+        sendJobData(&jobsData[processedCount], i);
+        processedCount++;
+      } else {
+        bool shouldProcessAJob = false;
+        mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, i, 0);
+        mpi_receive(&DISCONNECT_SIGNAL, 1, MPI_INT, i, 0, NULL);
+        disconnectedCount++;
+      }
+    }
+
+    // receive jobs results
+    while (disconnectedCount < (mpi.size - 1))
+    { 
+      int* source = malloc(1 * sizeof(int));
+      SimulationResult result;
+      receiveJobResult(&result, MPI_ANY_SOURCE, source);
+      //printf("Me, process %d, received the result of job number %d\n", mpi.rank, result.jobIndex);
+      //writeJobResult(jobsData[result.jobIndex], result, stdout);
+      results[result.jobIndex] = result;
+      if (processedCount < jobsCount) {
+        bool shouldProcessAJob = true;
+        mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, *source, 0);
+        sendJobData(&jobsData[processedCount], *source);
+      } else {
+        bool shouldProcessAJob = false;
+        mpi_send(&shouldProcessAJob, 1, MPI_C_BOOL, *source, 0);
+        mpi_receive(&DISCONNECT_SIGNAL, 1, MPI_INT, *source, 0, NULL);
+        disconnectedCount++;
+        //printf("Me, process %d, received a disconnect signal from process %d\n", mpi.rank, *source);
+      }
+
+      processedCount++;
+    }
+
+
+
+    writeJobsResult(jobsData, results, jobsCount, "output.txt");
+    destroyJobsData(jobsData, jobsCount);
+    destroySimulationResult(results, jobsCount);
+   // printf("Me, process %d, im disconnecting\n", mpi.rank);
+
+  } else {
+    while (true)
+    { 
+      bool shouldProcessAJob;
+      mpi_receive(&shouldProcessAJob, 1, MPI_C_BOOL, MAIN_PROCESS, 0, NULL);
+      if (shouldProcessAJob) {
+        JobData jobData;
+        receiveJobData(&jobData, MAIN_PROCESS);
+       // printf("Me, process %d, received the job number %d\n", mpi.rank, jobData.jobIndex);
+        usleep(1000000); // 1 second
+        SimulationResult result = processJob(jobData);
+        result.jobIndex = jobData.jobIndex;
+        sendJobResult(&result, MAIN_PROCESS);
+        //printf("Me, process %d, sent the result of job number %d\n", mpi.rank, result.jobIndex);
+      } else {
+        mpi_send(&DISCONNECT_SIGNAL, 1, MPI_INT, MAIN_PROCESS, 0);
+        break;
+      }
+    }
   }
 
-  writeJobsResult(jobsData, results, jobsCount, "output.txt");
-
-  // free memory
-  destroyJobsData(jobsData, jobsCount);
-  destroySimulationResult(results, jobsCount);
-
+  mpi_finalize();
   clock_gettime(CLOCK_MONOTONIC, &end);
   double elapsedTime = (end.tv_sec - start.tv_sec) * 1e3 + (end.tv_nsec -
     start.tv_nsec) / 1e6;
   printf("Elapsed time: %.2f ms\n", elapsedTime);
 
+
   return EXIT_SUCCESS;
 }
 
-SimulationResult processJob(JobData jobData, Arguments args) {
+void sendJobData(JobData* jobData, int dest) {
+    int plateFileLength = strlen(jobData->plateFile) + 1;
+    int directoryLength = strlen(jobData->directory) + 1;
+
+    mpi_send(&plateFileLength, 1, MPI_INT, dest, 0);
+    mpi_send(jobData->plateFile, plateFileLength, MPI_CHAR, dest,1);
+    mpi_send(&directoryLength, 1, MPI_INT, dest, 2);
+    mpi_send(jobData->directory, directoryLength, MPI_CHAR, dest,3);
+
+    mpi_send(&jobData->duration, 1, MPI_DOUBLE, dest, 4);
+    mpi_send(&jobData->thermalDiffusivity, 1, MPI_DOUBLE, dest, 5);
+    mpi_send(&jobData->plateCellDimmensions, 1, MPI_DOUBLE, dest, 6);
+    mpi_send(&jobData->balancePoint, 1, MPI_DOUBLE, dest, 7);
+    mpi_send(&jobData->threadCount, 1, MPI_INT, dest, 8);
+    mpi_send(&jobData->jobIndex, 1, MPI_INT, dest, 9);
+}
+
+void receiveJobData(JobData* jobData, int source) {
+  int plateFileLength, directoryLength;
+
+  mpi_receive(&plateFileLength, 1, MPI_INT, source, 0, NULL);
+  jobData->plateFile = (char*) malloc(plateFileLength);
+  mpi_receive(jobData->plateFile, plateFileLength, MPI_CHAR, source, 1, NULL);
+
+  mpi_receive(&directoryLength, 1, MPI_INT, source, 2, NULL);
+  jobData->directory = (char*) malloc(directoryLength);
+  mpi_receive(jobData->directory, directoryLength, MPI_CHAR, source, 3, NULL);
+
+  mpi_receive(&jobData->duration, 1, MPI_DOUBLE, source, 4, NULL);
+  mpi_receive(&jobData->thermalDiffusivity, 1, MPI_DOUBLE, source, 5, NULL);
+  mpi_receive(&jobData->plateCellDimmensions, 1, MPI_DOUBLE, source, 6, NULL);
+  mpi_receive(&jobData->balancePoint, 1, MPI_DOUBLE, source, 7, NULL);
+  mpi_receive(&jobData->threadCount, 1, MPI_DOUBLE, source, 8, NULL);
+  mpi_receive(&jobData->jobIndex, 1, MPI_INT, source, 9, NULL);
+
+}
+
+void sendJobResult(SimulationResult* result, int dest) {
+  size_t plateSize = result->plate->size;
+
+  mpi_send(&plateSize, 1, MPI_INT, dest, 0);
+  mpi_send(result->plate->data, plateSize, MPI_DOUBLE, dest, 1);
+
+  mpi_send(&result->iterations, 1, MPI_INT, dest, 2);
+  mpi_send(&result->jobIndex, 1, MPI_INT, dest, 3);
+}
+
+void receiveJobResult(SimulationResult* result, int source, int* sourceCb) {
+
+  int plateSize;
+  mpi_receive(&plateSize, 1, MPI_INT, source, 0, NULL);
+  result->plate = malloc(sizeof(Plate));
+  result->plate->data = malloc(plateSize * sizeof(double));
+  mpi_receive(result->plate->data, plateSize, MPI_DOUBLE, source, 1, NULL);
+
+  mpi_receive(&result->iterations, 1, MPI_INT, source, 2, sourceCb);
+  mpi_receive(&result->jobIndex, 1, MPI_INT, source, 3, NULL);
+}
+
+
+
+SimulationResult processJob(JobData jobData) {
   Plate* plate = readPlate(jobData.plateFile, jobData.directory);
-  SimulationResult result = simulate(jobData, plate, args);
+  SimulationResult result = simulate(jobData, plate);
+  writeJobResult(jobData, result, stdout);
   return result;
 }
 
-SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
+SimulationResult simulate(JobData jobData, Plate* plate) {
   Plate* readPlate = copyPlate(plate);
   Plate* writePlate = plate;
   const size_t totalCells = readPlate->rows * readPlate->cols;
   SharedData* sharedData = malloc(sizeof(SharedData));
   sharedData->readPlate = readPlate;
   sharedData->writePlate = writePlate;
-  sharedData->threadCount = args.threadsCount > totalCells ? totalCells
-    : args.threadsCount;
+  sharedData->threadCount = jobData.threadCount > totalCells ? totalCells
+    : jobData.threadCount;
   sharedData->jobData = jobData;
   sharedData->totalIterations = 0;
   sharedData->currentCell = 0;
 
-  calcNewTemperature(sharedData, args);
+  calcNewTemperature(sharedData);
 
 
 
@@ -79,9 +216,7 @@ SimulationResult simulate(JobData jobData, Plate* plate, Arguments args) {
   return result;
 }
 
-void calcNewTemperature(SharedData* sharedData, Arguments args) {
-
-    // MPI_Init(&args.argc, &args.argv);
+void calcNewTemperature(SharedData* sharedData) {
 
     const JobData jobData = sharedData->jobData;
     const double factor = (jobData.duration * jobData.thermalDiffusivity) /
@@ -141,9 +276,6 @@ void calcNewTemperature(SharedData* sharedData, Arguments args) {
 
         #pragma omp barrier // Sincronizar los hilos antes de la siguiente iteración
     }
-
-    //MPI_Finalize();
-
     return;
 }
 
