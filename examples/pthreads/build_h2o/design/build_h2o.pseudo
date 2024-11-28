@@ -1,0 +1,25 @@
+procedure main() do
+  shared hydrogen_semaphore = semaphore(2)
+  shared oxygen_semaphore = semaphore(1)
+  shared bond_barrier = barrier(3)
+  while read atom do
+    case atom of do
+      'H': create_thread(hydrogen)
+      'O': create_thread(oxygen)
+    end case
+  end while
+end procedure
+
+procedure hydrogen() do
+  wait(hydrogen_semaphore)
+    bond_barrier.wait()
+    bond()
+  signal(hydrogen_semaphore)
+end procedure
+
+procedure oxygen() do
+  wait(oxygen_semaphore)
+  bond_barrier.wait()
+    bond()
+  signal(oxygen_semaphore)
+end procedure
