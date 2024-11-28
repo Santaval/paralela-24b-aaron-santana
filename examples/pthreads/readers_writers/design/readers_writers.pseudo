@@ -1,0 +1,35 @@
+procedure main() do
+  shared can_access_medium = semaphore(1)
+  shared reader_count := 0
+  shared can_accsess_reader_count := semaphore(1)
+  while true do
+    case read_char() of do
+      'R': create_thread(reader)
+      'W': create_thread(writer)
+      EOF: return
+    end case
+  end while
+end procedure
+
+procedure reader() do
+  wait(can_accsess_reader_count)
+  if ++reader_count = 1 do 
+    wait(can_access_medium)
+  end
+  
+  signal(can_accsess_reader_count)
+  read()
+
+  wait(can_accsess_reader_count)
+  if --reader_count = 0 do 
+    signal(can_access_medium)
+  end
+  
+  signal(can_accsess_reader_count)
+end procedure
+
+procedure writer() do
+  wait(can_access_medium)
+    write()
+  signal(can_access_medium)
+end procedure
