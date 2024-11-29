@@ -1,0 +1,25 @@
+procedure main() do
+  shared male_semaphore = semaphore(1)
+  shared female_semaphore = semaphore(1)
+  shared dance_barrier = barrier(2)
+  while read genre do
+    case genre of do
+      'M': create_thread(male)
+      'W': create_thread(female)
+    end case
+  end while
+end procedure
+
+procedure male() do
+  wait(male_semaphore)
+  dance_barrier.wait()
+  signal(male_semaphore)
+    dance()
+end procedure
+
+procedure female() do
+  wait(female_semaphore)
+  dance_barrier.wait()      
+  signal(female_semaphore)
+  dance()
+end procedure
